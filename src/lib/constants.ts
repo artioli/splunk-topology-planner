@@ -1,0 +1,80 @@
+export const DOC_LINKS = {
+  sva: 'https://help.splunk.com/en/data-management/splunk-validated-architectures',
+  hardware104:
+    'https://help.splunk.com/en/splunk-enterprise/get-started/deployment-capacity-manual/10.4/performance-reference/reference-hardware',
+  network104:
+    'https://help.splunk.com/en/splunk-enterprise/administer/inherit-a-splunk-deployment/10.4/inherited-deployment-tasks/components-and-their-relationship-with-the-network',
+  esMinimum:
+    'https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment',
+  itsiPlanning:
+    'https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/4.21/planning/plan-your-itsi-deployment',
+  performance104:
+    'https://help.splunk.com/en/splunk-enterprise/get-started/deployment-capacity-manual/10.4/performance-reference/summary-of-performance-recommendations',
+  management104:
+    'https://help.splunk.com/en/splunk-enterprise/administer/distributed-deployment-manual/10.4/overview-of-splunk-enterprise-distributed-deployments/components-that-help-to-manage-your-deployment',
+} as const;
+
+export const DEFAULT_INPUTS = {
+  dailyIngestGb: 100,
+  useEpsInput: false,
+  eventsPerSecond: 5000,
+  avgEventBytes: 512,
+  utilization: 0.65,
+  concurrentUsers: 8,
+  singleServerDeployment: false,
+  searchHeadCount: 3,
+  searchHeadCluster: true,
+  enterpriseSecurity: false,
+  itsi: false,
+  hotWarm: { value: 30, unit: 'days' as const },
+  cold: { value: 60, unit: 'days' as const },
+  frozen: { value: 275, unit: 'days' as const },
+  archivingMode: 'clustered-optimized' as const,
+  autoClusterEstimation: true,
+  maxVolumePerIndexGb: 300,
+  manualIndexerCount: 3,
+  replicationFactor: 3,
+  searchFactor: 2,
+  environment: 'physical' as const,
+  forwarderClientCount: 25,
+  managementManualConfig: false,
+  dedicateDeploymentServer: false,
+  colocateClusterManager: false,
+  colocateShcDeployer: false,
+  dedicateLicenseManager: false,
+  dedicateMonitoringConsole: false,
+};
+
+export const SIZING = {
+  C_RAW: 0.15,
+  C_META: 0.35,
+  DEFAULT_RF: 3,
+  DEFAULT_SF: 2,
+  INDEXER_GB_PER_DAY: 300,
+  MIN_CLUSTER_INDEXERS: 3,
+  MIN_SHC_MEMBERS: 3,
+  DS_DEDICATED_CLIENT_THRESHOLD: 50,
+  MAX_INDEXERS: 100,
+  OS_DISK_GB: 100,
+  SPLUNK_INSTALL_DISK_GB: 100,
+  SEARCH_HEAD_DATA_DISK_GB: 300,
+  MANAGEMENT_DISK_GB: 100,
+} as const;
+
+export const SVA_NAMES: Record<string, string> = {
+  S1: 'Single Server Deployment',
+  S11: 'Single Server with Enterprise Security',
+  D1: 'Distributed Non-Clustered',
+  D11: 'Distributed Non-Clustered with ES',
+  D13: 'Distributed Non-Clustered with SHC and ES',
+  C1: 'Single-Site Clustered',
+  C11: 'Single-Site Clustered with ES',
+  C3: 'Single-Site Clustered with SHC',
+  C13: 'Single-Site Clustered with SHC and ES',
+  M2: 'Multi-Site Clustered',
+  M12: 'Multi-Site Clustered with ES',
+  M3: 'Multi-Site Clustered with SHC',
+  M13: 'Multi-Site Clustered with SHC and ES',
+  M4: 'Multi-Site with Stretched SHC',
+  M14: 'Multi-Site with Stretched SHC and ES',
+};
