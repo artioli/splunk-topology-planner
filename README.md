@@ -95,7 +95,24 @@ src/
 
 Stack: **Vite**, **TypeScript**, **Vitest**. No framework — vanilla TS for a small, deployable static site.
 
-## Documentation references
+## UX and supported viewports
+
+The UI is optimized for phones, tablets, and desktops without a separate mobile app.
+
+| Viewport | Behavior |
+|----------|----------|
+| **&lt; 640px** (phone) | Single-column forms; bottom tab nav (Planner / Guide); command blocks stack vertically (Copy below command); horizontal scroll for wide tables; wizard panels 4–6 start collapsed |
+| **640px – 1023px** (tablet) | Two-column form grids where appropriate; top nav with theme toggle |
+| **≥ 1024px** (desktop) | Planner: wizard left, live results right (sticky); guide: config left, steps right; sticky summary bar on planner |
+
+**Theme:** Use the **Auto / Light / Dark** button in the top nav. Preference is stored in `localStorage`.
+
+**Planner mobile:** After your first input change, a **Jump to results** button appears. A sticky **Copy summary** bar sits above the bottom nav.
+
+**Guide:** Progress bar shows completed steps; **Jump to step** dropdown scrolls to a step; completed steps are hidden by default (toggle **Show completed steps**).
+
+Manual checks before release: iPhone-width (~390px), iPad (~768px), desktop (1280px) — nav, tables, command copy, planner side-by-side layout, guide progress.
+
 
 Official Splunk docs used as the basis for recommendations:
 

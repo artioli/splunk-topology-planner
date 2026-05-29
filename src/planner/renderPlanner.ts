@@ -206,18 +206,50 @@ function recalculate(): void {
   const prefixResult = document.getElementById('inferred-prefix-result');
   if (prefixResult) prefixResult.textContent = result.topology.prefixLabel;
 
-  const copyBtn = document.getElementById('copy-summary');
-  if (copyBtn) {
+  bindCopySummary(result);
+}
+
+function bindCopySummary(result: PlannerResult): void {
+  const handler = async (btn: HTMLButtonElement) => {
+    await navigator.clipboard.writeText(buildMarkdownSummary(result));
+    const label = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => {
+      btn.textContent = label?.includes('Markdown') ? 'Copy summary (Markdown)' : 'Copy summary';
+    }, 2000);
+  };
+
+  for (const id of ['copy-summary', 'copy-summary-mobile'] as const) {
+    const copyBtn = document.getElementById(id);
+    if (!copyBtn) continue;
     const fresh = copyBtn.cloneNode(true) as HTMLButtonElement;
     copyBtn.parentNode?.replaceChild(fresh, copyBtn);
-    fresh.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(buildMarkdownSummary(result));
-      fresh.textContent = 'Copied!';
-      setTimeout(() => {
-        fresh.textContent = 'Copy summary (Markdown)';
-      }, 2000);
-    });
+    fresh.addEventListener('click', () => handler(fresh));
   }
+}
+
+function collapseMobileWizardPanels(): void {
+  if (!window.matchMedia('(max-width: 767px)').matches) return;
+  document.querySelectorAll('.wizard-column .panel').forEach((panel, index) => {
+    if (index >= 3) panel.classList.add('collapsed');
+  });
+}
+
+function bindJumpToResults(): void {
+  const jumpBtn = document.getElementById('jump-results');
+  jumpBtn?.addEventListener('click', () => {
+    document.getElementById('results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  let interacted = false;
+  const form = document.getElementById('planner-form');
+  const showJump = (): void => {
+    if (interacted) return;
+    interacted = true;
+    jumpBtn?.classList.remove('is-hidden');
+  };
+  form?.addEventListener('input', showJump, { once: false });
+  form?.addEventListener('change', showJump, { once: false });
 }
 
 function bindPanelCollapse(): void {
@@ -236,10 +268,11 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
     <header class="app-header">
       <h1>Splunk On-Prem Topology Planner</h1>
       <p class="subtitle">SVA topology, storage, hardware (10.4), firewall ports, management colocation · <a href="#guide">Linux deployment guide</a></p>
-      <div class="summary-bar" id="summary-content"></div>
+      <div class="summary-bar summary-bar--sticky" id="summary-content"></div>
     </header>
 
-    <main class="layout">
+    <main class="layout planner-layout">
+      <div class="wizard-column">
       <form id="planner-form" class="wizard">
         <section class="panel">
           <div class="panel-header">1. Workload</div>
@@ -431,12 +464,22 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
       </form>
+      </div>
 
-      <div id="results-container"></div>
+      <div class="results-column" id="results-column">
+        <div id="results-container"></div>
+      </div>
     </main>
+
+    <button type="button" id="jump-results" class="btn jump-results is-hidden">Jump to results</button>
+    <div class="mobile-copy-bar">
+      <button type="button" class="btn" id="copy-summary-mobile">Copy summary</button>
+    </div>
   `;
 
   bindPanelCollapse();
+  collapseMobileWizardPanels();
+  bindJumpToResults();
 
   const form = document.getElementById('planner-form');
   const onFormChange = (): void => {

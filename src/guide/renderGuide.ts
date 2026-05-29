@@ -2,7 +2,7 @@ import { escapeHtml } from '../lib/format';
 import { renderNav } from '../nav';
 import { DEPLOYMENT_PROFILES, getProfile } from './profiles';
 import { defaultHostConfig, hostByRole } from './hostDefaults';
-import { loadGuideState, saveGuideState, toggleStepComplete } from './progress';
+import { isStepComplete, loadGuideState, saveGuideState, toggleStepComplete } from './progress';
 import { substitute, substituteCommands } from './substitute';
 import { filterStepsForProfile, targetLabel } from './steps';
 import type { DeploymentProfileId, GuideBlock, GuideState, GuideStep, HostConfig } from './types';
@@ -70,18 +70,20 @@ function renderHostTable(profileId: DeploymentProfileId, config: HostConfig): st
       </tr>`;
     })
     .join('');
-  return `<table class="host-table"><thead><tr><th>Role</th><th>Hostname</th><th>IP</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<div class="table-scroll"><table class="host-table"><thead><tr><th>Role</th><th>Hostname</th><th>IP</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
-function renderStep(step: GuideStep, state: GuideState): string {
-  const done = state.completedSteps.includes(step.id);
+function renderStep(step: GuideStep, state: GuideState, expandCurrent: boolean): string {
+  const done = isStepComplete(state, step.id);
+  const hidden = done && !state.showCompletedSteps;
   const targets = step.targets.map((t) => `<span class="target-chip">${escapeHtml(targetLabel(t))}</span>`).join('');
   const docs = step.docLinks
     .map((d) => `<a href="${d.url}" target="_blank" rel="noopener">${escapeHtml(d.label)}</a>`)
     .join(' · ');
   const blocks = step.blocks.map((b) => renderBlock(b, state.hostConfig)).join('');
+  const collapsed = done && !expandCurrent;
   return `
-    <section class="panel guide-step ${done ? 'step-done' : ''}" data-step-id="${step.id}">
+    <section class="panel guide-step ${done ? 'step-done' : ''} ${hidden ? 'step-hidden' : ''} ${collapsed ? 'collapsed' : ''}" data-step-id="${step.id}" id="step-${step.id}">
       <div class="panel-header guide-step-header">
         <label class="step-check-label">
           <input type="checkbox" class="step-done-cb" data-step-id="${step.id}" ${done ? 'checked' : ''} />
@@ -96,6 +98,39 @@ function renderStep(step: GuideStep, state: GuideState): string {
         ${blocks}
       </div>
     </section>`;
+}
+
+function renderProgressBar(steps: GuideStep[], state: GuideState): string {
+  const total = steps.length;
+  const done = steps.filter((s) => isStepComplete(state, s.id)).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  return `
+    <div class="guide-progress guide-progress-full">
+      <div class="guide-progress-track" role="progressbar" aria-valuenow="${done}" aria-valuemin="0" aria-valuemax="${total}">
+        <div class="guide-progress-fill" style="width:${pct}%"></div>
+      </div>
+      <p class="guide-progress-label"><strong>${done}</strong> / ${total} steps complete</p>
+    </div>`;
+}
+
+function renderStepJumpMenu(steps: GuideStep[]): string {
+  const options = steps
+    .map((s) => `<option value="${s.id}">${escapeHtml(s.phase)}: ${escapeHtml(s.title)}</option>`)
+    .join('');
+  return `
+    <div class="guide-step-jump">
+      <label class="field" for="step-jump-select">
+        <span>Jump to step</span>
+        <select id="step-jump-select">
+          ${options}
+        </select>
+      </label>
+    </div>`;
+}
+
+function firstIncompleteStepId(steps: GuideStep[], state: GuideState): string | null {
+  const step = steps.find((s) => !isStepComplete(state, s.id));
+  return step?.id ?? null;
 }
 
 function buildMarkdown(state: GuideState): string {
@@ -116,8 +151,42 @@ function buildMarkdown(state: GuideState): string {
   return md;
 }
 
-function renderGuideContent(container: HTMLElement, state: GuideState): void {
+function renderStepsHtml(steps: GuideStep[], state: GuideState, expandStepId: string | null): string {
+  return steps.map((s) => renderStep(s, state, s.id === expandStepId)).join('');
+}
+
+function updateProgressUi(container: HTMLElement, steps: GuideStep[], state: GuideState): void {
+  const total = steps.length;
+  const done = steps.filter((s) => isStepComplete(state, s.id)).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const fill = container.querySelector('.guide-progress-fill') as HTMLElement | null;
+  const label = container.querySelector('.guide-progress-label');
+  const bar = container.querySelector('[role="progressbar"]');
+  if (fill) fill.style.width = `${pct}%`;
+  if (label) label.innerHTML = `<strong>${done}</strong> / ${total} steps complete`;
+  if (bar) {
+    bar.setAttribute('aria-valuenow', String(done));
+    bar.setAttribute('aria-valuemax', String(total));
+  }
+}
+
+function bindCopyButtons(container: HTMLElement): void {
+  container.querySelectorAll('.btn-copy').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const pre = btn.closest('.command-row')?.querySelector('.command-block');
+      const text = pre?.textContent ?? '';
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied';
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+      }, 1500);
+    });
+  });
+}
+
+function renderGuideContent(container: HTMLElement, state: GuideState, expandStepId?: string | null): void {
   const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
+  const currentExpand = expandStepId ?? firstIncompleteStepId(steps, state);
   const profileCards = DEPLOYMENT_PROFILES.map(
     (p) => `
     <label class="profile-card ${state.profileId === p.id ? 'selected' : ''}">
@@ -136,37 +205,47 @@ function renderGuideContent(container: HTMLElement, state: GuideState): void {
       <p class="subtitle">Step-by-step lab deployment for RHEL-family Linux · <a href="#planner">Topology planner</a></p>
     </header>
     <main class="layout guide-layout">
-      <section class="panel">
-        <div class="panel-header">Choose deployment profile</div>
-        <div class="panel-body">
-          <div class="profile-grid">${profileCards}</div>
-          <p class="field-hint">Sized with the planner? S1 → Single · D1 → Distributed NC · C1 → IC · C3 → IC + SHC</p>
-        </div>
-      </section>
+      ${renderProgressBar(steps, state)}
 
-      <section class="panel">
-        <div class="panel-header">Host configuration</div>
-        <div class="panel-body">
-          <div class="grid-2">
-            <div class="field"><label for="cfg-os-user">OS user</label><input id="cfg-os-user" value="${escapeHtml(state.hostConfig.osUser)}" /></div>
-            <div class="field"><label for="cfg-splunk-version">Splunk version</label><input id="cfg-splunk-version" value="${escapeHtml(state.hostConfig.splunkVersion)}" /></div>
-            <div class="field"><label for="cfg-admin-password">Splunk admin password (placeholder)</label><input id="cfg-admin-password" type="password" value="${escapeHtml(state.hostConfig.adminPassword)}" autocomplete="off" /></div>
-            <div class="field"><label for="cfg-cluster-secret">Cluster secret</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>
+      <div class="guide-config-column">
+        <section class="panel">
+          <div class="panel-header">Choose deployment profile</div>
+          <div class="panel-body">
+            <div class="profile-grid">${profileCards}</div>
+            <p class="field-hint">Sized with the planner? S1 → Single · D1 → Distributed NC · C1 → IC · C3 → IC + SHC</p>
           </div>
-          ${renderHostTable(state.profileId, state.hostConfig)}
-          <div class="checkbox-row">
-            <input type="checkbox" id="include-forwarders" ${state.includeForwarders ? 'checked' : ''} />
-            <label for="include-forwarders">Include Universal Forwarder appendix</label>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <div class="guide-actions">
-        <button type="button" id="copy-guide-md" class="btn-secondary">Copy guide (Markdown)</button>
-        <span class="field-hint">${steps.length} steps for this profile</span>
+        <section class="panel">
+          <div class="panel-header">Host configuration</div>
+          <div class="panel-body">
+            <div class="grid-2">
+              <div class="field"><label for="cfg-os-user">OS user</label><input id="cfg-os-user" value="${escapeHtml(state.hostConfig.osUser)}" /></div>
+              <div class="field"><label for="cfg-splunk-version">Splunk version</label><input id="cfg-splunk-version" value="${escapeHtml(state.hostConfig.splunkVersion)}" /></div>
+              <div class="field"><label for="cfg-admin-password">Splunk admin password (placeholder)</label><input id="cfg-admin-password" type="password" value="${escapeHtml(state.hostConfig.adminPassword)}" autocomplete="off" /></div>
+              <div class="field"><label for="cfg-cluster-secret">Cluster secret</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>
+            </div>
+            ${renderHostTable(state.profileId, state.hostConfig)}
+            <div class="checkbox-row">
+              <input type="checkbox" id="include-forwarders" ${state.includeForwarders ? 'checked' : ''} />
+              <label for="include-forwarders">Include Universal Forwarder appendix</label>
+            </div>
+          </div>
+        </section>
+
+        <div class="guide-actions">
+          <button type="button" id="copy-guide-md" class="btn-secondary">Copy guide (Markdown)</button>
+        </div>
       </div>
 
-      <div id="guide-steps">${steps.map((s) => renderStep(s, state)).join('')}</div>
+      <div class="guide-steps-column">
+        ${renderStepJumpMenu(steps)}
+        <div class="checkbox-row guide-show-completed">
+          <input type="checkbox" id="show-completed-steps" ${state.showCompletedSteps ? 'checked' : ''} />
+          <label for="show-completed-steps">Show completed steps</label>
+        </div>
+        <div id="guide-steps">${renderStepsHtml(steps, state, currentExpand)}</div>
+      </div>
     </main>
   `;
 
@@ -174,52 +253,61 @@ function renderGuideContent(container: HTMLElement, state: GuideState): void {
 }
 
 function bindGuideEvents(container: HTMLElement, initialState: GuideState): void {
-  const refresh = () => {
-    const state = {
-      ...initialState,
-      profileId: (document.querySelector<HTMLInputElement>('input[name="profile"]:checked')?.value ??
-        initialState.profileId) as DeploymentProfileId,
-      includeForwarders: (document.getElementById('include-forwarders') as HTMLInputElement)?.checked ?? false,
-      hostConfig: readHostConfigFromForm(initialState),
-    };
+  const readState = (): GuideState => ({
+    ...initialState,
+    profileId: (document.querySelector<HTMLInputElement>('input[name="profile"]:checked')?.value ??
+      initialState.profileId) as DeploymentProfileId,
+    includeForwarders: (document.getElementById('include-forwarders') as HTMLInputElement)?.checked ?? false,
+    showCompletedSteps: (document.getElementById('show-completed-steps') as HTMLInputElement)?.checked ?? false,
+    hostConfig: readHostConfigFromForm(initialState),
+  });
+
+  const refresh = (expandStepId?: string | null) => {
+    const state = readState();
     saveGuideState(state);
-    renderGuideContent(container, state);
+    renderGuideContent(container, state, expandStepId);
   };
 
   container.querySelectorAll('input[name="profile"]').forEach((el) => {
-    el.addEventListener('change', refresh);
+    el.addEventListener('change', () => {
+      const state = readState();
+      const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
+      refresh(firstIncompleteStepId(steps, state));
+    });
   });
-  container.querySelector('#include-forwarders')?.addEventListener('change', refresh);
+  container.querySelector('#include-forwarders')?.addEventListener('change', () => {
+    const state = readState();
+    const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
+    refresh(firstIncompleteStepId(steps, state));
+  });
+  container.querySelector('#show-completed-steps')?.addEventListener('change', () => refresh());
+
   container.querySelectorAll('[data-host-role], #cfg-os-user, #cfg-admin-password, #cfg-cluster-secret, #cfg-splunk-version').forEach((el) => {
     el.addEventListener('change', () => {
-      const state = {
-        ...initialState,
-        profileId: (document.querySelector<HTMLInputElement>('input[name="profile"]:checked')?.value ??
-          initialState.profileId) as DeploymentProfileId,
-        includeForwarders: (document.getElementById('include-forwarders') as HTMLInputElement)?.checked ?? false,
-        hostConfig: readHostConfigFromForm(initialState),
-      };
+      const state = readState();
       saveGuideState(state);
-      document.getElementById('guide-steps')!.innerHTML = filterStepsForProfile(
-        state.profileId,
-        state.includeForwarders,
-      )
-        .map((s) => renderStep(s, state))
-        .join('');
+      document.getElementById('guide-steps')!.innerHTML = renderStepsHtml(
+        filterStepsForProfile(state.profileId, state.includeForwarders),
+        state,
+        firstIncompleteStepId(filterStepsForProfile(state.profileId, state.includeForwarders), state),
+      );
       bindStepHandlers(container, state);
+      bindCopyButtons(container);
     });
   });
 
+  container.querySelector('#step-jump-select')?.addEventListener('change', (e) => {
+    const id = (e.target as HTMLSelectElement).value;
+    const el = document.getElementById(`step-${id}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el?.classList.remove('collapsed');
+  });
+
   bindStepHandlers(container, initialState);
+  bindCopyButtons(container);
 
   container.querySelector('#copy-guide-md')?.addEventListener('click', async () => {
-    const state = {
-      ...initialState,
-      profileId: (document.querySelector<HTMLInputElement>('input[name="profile"]:checked')?.value ??
-        initialState.profileId) as DeploymentProfileId,
-      includeForwarders: (document.getElementById('include-forwarders') as HTMLInputElement)?.checked ?? false,
-      hostConfig: readHostConfigFromForm(initialState),
-    };
+    const state = readState();
     await navigator.clipboard.writeText(buildMarkdown(state));
     const btn = container.querySelector('#copy-guide-md');
     if (btn) {
@@ -236,38 +324,24 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
       header.parentElement?.classList.toggle('collapsed');
     });
   });
-
-  container.querySelectorAll('.btn-copy').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const pre = btn.previousElementSibling;
-      const text = pre?.textContent ?? '';
-      await navigator.clipboard.writeText(text);
-      btn.textContent = 'Copied';
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-      }, 1500);
-    });
-  });
 }
 
 function bindStepHandlers(container: HTMLElement, state: GuideState): void {
+  const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
   container.querySelectorAll('.step-done-cb').forEach((cb) => {
     cb.addEventListener('change', () => {
       const id = (cb as HTMLInputElement).dataset.stepId!;
-      const next = toggleStepComplete(state, id, (cb as HTMLInputElement).checked);
+      const current = loadGuideState();
+      const next = toggleStepComplete(current, id, (cb as HTMLInputElement).checked);
       saveGuideState(next);
-      (cb as HTMLElement).closest('.guide-step')?.classList.toggle('step-done', (cb as HTMLInputElement).checked);
-    });
-  });
-  container.querySelectorAll('.btn-copy').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const pre = btn.previousElementSibling;
-      const text = pre?.textContent ?? '';
-      await navigator.clipboard.writeText(text);
-      btn.textContent = 'Copied';
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-      }, 1500);
+      const stepEl = (cb as HTMLElement).closest('.guide-step');
+      stepEl?.classList.toggle('step-done', (cb as HTMLInputElement).checked);
+      if ((cb as HTMLInputElement).checked && !next.showCompletedSteps) {
+        stepEl?.classList.add('step-hidden');
+      } else {
+        stepEl?.classList.remove('step-hidden');
+      }
+      updateProgressUi(container, steps, next);
     });
   });
 }

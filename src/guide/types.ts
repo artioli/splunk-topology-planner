@@ -90,4 +90,5 @@ export interface GuideState {
   includeForwarders: boolean;
   hostConfig: HostConfig;
   completedSteps: string[];
+  showCompletedSteps: boolean;
 }

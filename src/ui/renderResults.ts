@@ -17,6 +17,15 @@ function badges(sources: string[]): string {
     .join('');
 }
 
+function section(title: string, body: string, open = true, fullWidth = false): string {
+  const cls = fullWidth ? 'result-section result-section--full' : 'result-section';
+  return `
+    <details class="${cls}" ${open ? 'open' : ''}>
+      <summary>${escapeHtml(title)}</summary>
+      <div class="result-section-body">${body}</div>
+    </details>`;
+}
+
 export function renderResults(result: PlannerResult): string {
   const { topology, storage, networkPorts, firewallChecklist, prerequisites, inputs } = result;
 
@@ -62,18 +71,18 @@ export function renderResults(result: PlannerResult): string {
     'None';
 
   const perf = result.performanceRecommendation;
-  const perfCard = perf
+  const perfBlock = perf
     ? `
-    <div class="result-card">
-      <h3>Concurrent users (10.4 performance table)</h3>
-      <p>${escapeHtml(perf.summary)}</p>
-      <ul class="compact">
-        <li>User band: ${escapeHtml(perf.userBandLabel)}</li>
-        <li>Ingest band: ${escapeHtml(perf.ingestBandLabel)}</li>
-        <li>Guideline: ${perf.recommendedIndexers} indexer(s), ${perf.recommendedSearchHeads} search head(s)${perf.useCombinedInstance ? ' (combined instance)' : ''}</li>
-      </ul>
-      <p class="field-hint"><a href="${DOC_LINKS.performance104}" target="_blank" rel="noopener">Summary of performance recommendations</a></p>
-    </div>`
+      <div class="result-card">
+        <h3>Concurrent users (10.4 performance table)</h3>
+        <p>${escapeHtml(perf.summary)}</p>
+        <ul class="compact">
+          <li>User band: ${escapeHtml(perf.userBandLabel)}</li>
+          <li>Ingest band: ${escapeHtml(perf.ingestBandLabel)}</li>
+          <li>Guideline: ${perf.recommendedIndexers} indexer(s), ${perf.recommendedSearchHeads} search head(s)${perf.useCombinedInstance ? ' (combined instance)' : ''}</li>
+        </ul>
+        <p class="field-hint"><a href="${DOC_LINKS.performance104}" target="_blank" rel="noopener">Summary of performance recommendations</a></p>
+      </div>`
     : '';
 
   const mgmtHosts = topology.managementPlan.hosts
@@ -92,6 +101,72 @@ export function renderResults(result: PlannerResult): string {
     ? `Resolved from EPS: <strong>${result.resolvedIngestGb} GB/day</strong>`
     : `Daily ingest: <strong>${inputs.dailyIngestGb} GB/day</strong>`;
 
+  const topologyBody = `
+    <div class="result-card">
+      <h3>Recommended topology</h3>
+      <div class="sva-code">${escapeHtml(topology.svaCode)}</div>
+      <p>${escapeHtml(topology.svaName)}</p>
+      <p>${ingestNote} · <strong>Indexing tier:</strong> ${escapeHtml(topology.prefixLabel)} · <strong>Indexers:</strong> ${topology.indexerCount} · <strong>SH:</strong> ${topology.operationalSearchHeadCount}${topology.hasShc ? ' (SHC)' : ''}</p>
+      <p><strong>Premium apps:</strong> ${premium}</p>
+      <p class="field-hint">Cluster: ${cluster.autoEnabled ? 'Auto' : 'Manual'} — ${cluster.appliedIndexerCount} indexers @ ${cluster.maxVolumePerIndexGb} GB/day max per index</p>
+      ${warnings}
+      ${advisories}
+    </div>
+    ${perfBlock}`;
+
+  const managementBody = `
+    <div class="result-card">
+      <ul class="compact">${mgmtHosts || '<li>Included in combined instance</li>'}</ul>
+      <ul class="compact">${mgmtSuggestions}</ul>
+      <p class="field-hint"><a href="${DOC_LINKS.management104}" target="_blank" rel="noopener">Management components (10.4)</a></p>
+    </div>`;
+
+  const hardwareBody = `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Qty</th><th>Compute</th><th>Disk (guide)</th><th>Spec source</th></tr>
+        </thead>
+        <tbody>${inventoryRows}</tbody>
+      </table>
+    </div>`;
+
+  const storageBody = `
+    <p>Daily multiplier: ${storage.dailyMultiplier.toFixed(2)}× ingest</p>
+    <ul class="compact">
+      <li>Hot/warm (${formatPeriodLabel(inputs.hotWarm)}, ${storage.hotWarmDays}d): ${formatTb(storage.hotWarmTb)}</li>
+      <li>Cold (${formatPeriodLabel(inputs.cold)}, ${storage.coldDays}d): ${formatTb(storage.coldTb)}</li>
+      <li>Searchable: ${formatTb(storage.searchableTb)}</li>
+      <li>Frozen (${formatPeriodLabel(inputs.frozen)}, ${storage.frozenDays}d): ${formatTb(storage.frozenTb)}</li>
+      <li><strong>Total: ${formatTb(storage.totalTb)}</strong> (${storage.totalRetentionDays} day lifecycle)</li>
+    </ul>
+    <p><strong>Per indexer peer:</strong> ${formatTb(storage.perIndexerTotalTb)} total</p>`;
+
+  const networkBody = `
+    <p class="field-hint">HEC (TCP/8088) is always included on the indexing tier.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Tier</th><th>Component</th><th>Port</th><th>Purpose</th><th>Action</th></tr>
+        </thead>
+        <tbody>${portRows}</tbody>
+      </table>
+    </div>
+    <h4 style="margin-top:1rem;font-size:0.9rem">Firewall checklist</h4>
+    <ul class="compact">${fwList}</ul>`;
+
+  const prereqBody = `
+    <ul class="compact">${prereqList}</ul>
+    <h4 style="margin-top:1rem;font-size:0.9rem">Documentation references</h4>
+    <ul class="compact">
+      <li><a href="${DOC_LINKS.hardware104}" target="_blank" rel="noopener">Splunk Enterprise 10.4 — Reference hardware</a></li>
+      <li><a href="${DOC_LINKS.network104}" target="_blank" rel="noopener">Splunk Enterprise 10.4 — Network components</a></li>
+      <li><a href="${DOC_LINKS.esMinimum}" target="_blank" rel="noopener">Enterprise Security 8.5 — Production minimums</a></li>
+      <li><a href="${DOC_LINKS.itsiPlanning}" target="_blank" rel="noopener">ITSI 4.21 — Plan your deployment</a></li>
+      <li><a href="${DOC_LINKS.sva}" target="_blank" rel="noopener">Splunk Validated Architectures</a></li>
+    </ul>
+    <p class="field-hint">Estimates only. Validate with Splunk Sales or PS for production commitments.</p>`;
+
   return `
     <section class="results-panel panel" id="results">
       <div class="panel-header">Sizing results</div>
@@ -100,84 +175,16 @@ export function renderResults(result: PlannerResult): string {
           Updated: SVA ${topology.svaCode}, ${storage.totalTb} TB total, ${ingestNote}
         </div>
 
-        <div class="result-card">
-          <h3>Recommended topology</h3>
-          <div class="sva-code">${escapeHtml(topology.svaCode)}</div>
-          <p>${escapeHtml(topology.svaName)}</p>
-          <p>${ingestNote} · <strong>Indexing tier:</strong> ${escapeHtml(topology.prefixLabel)} · <strong>Indexers:</strong> ${topology.indexerCount} · <strong>SH:</strong> ${topology.operationalSearchHeadCount}${topology.hasShc ? ' (SHC)' : ''}</p>
-          <p><strong>Premium apps:</strong> ${premium}</p>
-          <p class="field-hint">Cluster: ${cluster.autoEnabled ? 'Auto' : 'Manual'} — ${cluster.appliedIndexerCount} indexers @ ${cluster.maxVolumePerIndexGb} GB/day max per index</p>
-          ${warnings}
-          ${advisories}
+        <div class="results-dashboard">
+          ${section('Topology', topologyBody, true, true)}
+          ${section('Management', managementBody, false)}
+          ${section('Hardware', hardwareBody, false)}
+          ${section('Storage', storageBody, false)}
+          ${section('Network', networkBody, false)}
+          ${section('Prerequisites', prereqBody, false, true)}
         </div>
 
-        ${perfCard}
-
-        <div class="result-card">
-          <h3>Management servers</h3>
-          <ul class="compact">${mgmtHosts || '<li>Included in combined instance</li>'}</ul>
-          <ul class="compact">${mgmtSuggestions}</ul>
-          <p class="field-hint"><a href="${DOC_LINKS.management104}" target="_blank" rel="noopener">Management components (10.4)</a></p>
-        </div>
-
-        <div class="result-card">
-          <h3>Server inventory</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Role</th><th>Qty</th><th>Compute</th><th>Disk (guide)</th><th>Spec source</th></tr>
-              </thead>
-              <tbody>${inventoryRows}</tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="result-card">
-          <h3>Storage (cluster total)</h3>
-          <p>Daily multiplier: ${storage.dailyMultiplier.toFixed(2)}× ingest</p>
-          <ul class="compact">
-            <li>Hot/warm (${formatPeriodLabel(inputs.hotWarm)}, ${storage.hotWarmDays}d): ${formatTb(storage.hotWarmTb)}</li>
-            <li>Cold (${formatPeriodLabel(inputs.cold)}, ${storage.coldDays}d): ${formatTb(storage.coldTb)}</li>
-            <li>Searchable: ${formatTb(storage.searchableTb)}</li>
-            <li>Frozen (${formatPeriodLabel(inputs.frozen)}, ${storage.frozenDays}d): ${formatTb(storage.frozenTb)}</li>
-            <li><strong>Total: ${formatTb(storage.totalTb)}</strong> (${storage.totalRetentionDays} day lifecycle)</li>
-          </ul>
-          <p><strong>Per indexer peer:</strong> ${formatTb(storage.perIndexerTotalTb)} total</p>
-        </div>
-
-        <div class="result-card">
-          <h3>Network / firewall</h3>
-          <p class="field-hint">HEC (TCP/8088) is always included on the indexing tier.</p>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Tier</th><th>Component</th><th>Port</th><th>Purpose</th><th>Action</th></tr>
-              </thead>
-              <tbody>${portRows}</tbody>
-            </table>
-          </div>
-          <h4 style="margin-top:1rem;font-size:0.9rem">Firewall checklist</h4>
-          <ul class="compact">${fwList}</ul>
-        </div>
-
-        <div class="result-card">
-          <h3>OS &amp; Splunk prerequisites</h3>
-          <ul class="compact">${prereqList}</ul>
-        </div>
-
-        <div class="result-card">
-          <h3>Documentation references</h3>
-          <ul class="compact">
-            <li><a href="${DOC_LINKS.hardware104}" target="_blank" rel="noopener">Splunk Enterprise 10.4 — Reference hardware</a></li>
-            <li><a href="${DOC_LINKS.network104}" target="_blank" rel="noopener">Splunk Enterprise 10.4 — Network components</a></li>
-            <li><a href="${DOC_LINKS.esMinimum}" target="_blank" rel="noopener">Enterprise Security 8.5 — Production minimums</a></li>
-            <li><a href="${DOC_LINKS.itsiPlanning}" target="_blank" rel="noopener">ITSI 4.21 — Plan your deployment</a></li>
-            <li><a href="${DOC_LINKS.sva}" target="_blank" rel="noopener">Splunk Validated Architectures</a></li>
-          </ul>
-          <p class="field-hint">Estimates only. Validate with Splunk Sales or PS for production commitments.</p>
-        </div>
-
-        <div class="actions">
+        <div class="actions actions--desktop-only">
           <button type="button" class="btn" id="copy-summary">Copy summary (Markdown)</button>
         </div>
       </div>

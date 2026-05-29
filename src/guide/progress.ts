@@ -12,6 +12,7 @@ export function loadGuideState(): GuideState {
         includeForwarders: false,
         hostConfig: defaultHostConfig(),
         completedSteps: [],
+        showCompletedSteps: false,
       };
     }
     const parsed = JSON.parse(raw) as Partial<GuideState>;
@@ -20,6 +21,7 @@ export function loadGuideState(): GuideState {
       includeForwarders: parsed.includeForwarders ?? false,
       hostConfig: { ...defaultHostConfig(), ...parsed.hostConfig },
       completedSteps: parsed.completedSteps ?? [],
+      showCompletedSteps: parsed.showCompletedSteps ?? false,
     };
   } catch {
     return {
@@ -27,6 +29,7 @@ export function loadGuideState(): GuideState {
       includeForwarders: false,
       hostConfig: defaultHostConfig(),
       completedSteps: [],
+      showCompletedSteps: false,
     };
   }
 }

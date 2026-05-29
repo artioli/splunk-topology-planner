@@ -1,9 +1,12 @@
 import './styles/global.css';
 import { renderGuide } from './guide/renderGuide';
-import { getRoute } from './nav';
+import { getRoute, bindNavEvents } from './nav';
 import { renderPlanner } from './planner/renderPlanner';
+import { initTheme } from './theme';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+
+initTheme();
 
 function render(): void {
   const route = getRoute();
@@ -12,6 +15,7 @@ function render(): void {
   } else {
     renderPlanner(app);
   }
+  bindNavEvents(app);
 }
 
 window.addEventListener('hashchange', render);
