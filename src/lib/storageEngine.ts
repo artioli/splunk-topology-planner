@@ -1,7 +1,7 @@
 import { SIZING } from './constants';
 import { gbToTb, roundTb } from './format';
 import { buildRetentionBreakdown } from './retentionUtils';
-import type { ArchivingMode, PlannerInputs, StorageTierResult } from './types';
+import type { PlannerInputs, StorageTierResult } from './types';
 
 export function getDailyMultiplier(
   isClustered: boolean,
@@ -12,17 +12,6 @@ export function getDailyMultiplier(
 ): number {
   if (!isClustered) return cRaw + cMeta;
   return cRaw * rf + cMeta * sf;
-}
-
-export function getArchiveMultiplier(
-  archivingMode: ArchivingMode,
-  isClustered: boolean,
-  rf: number,
-): number {
-  if (archivingMode === 'none') return 0;
-  if (archivingMode === 'local' || archivingMode === 'clustered-optimized') return 1;
-  if (archivingMode === 'clustered-unoptimized' && isClustered) return rf;
-  return 1;
 }
 
 export function calculateStorage(
@@ -40,11 +29,11 @@ export function calculateStorage(
   const coldGb = dailyGb * retention.coldDays;
   const searchableGb = hotWarmGb + coldGb;
 
-  const archiveMult = getArchiveMultiplier(inputs.archivingMode, isClustered, rf);
+  // Each indexer archives its own raw frozen data (no clustered archive multiplier).
   const frozenGb =
-    inputs.archivingMode === 'none'
-      ? 0
-      : inputs.dailyIngestGb * SIZING.C_RAW * retention.frozenDays * archiveMult;
+    retention.frozenDays > 0
+      ? inputs.dailyIngestGb * SIZING.C_RAW * retention.frozenDays
+      : 0;
 
   const totalGb = searchableGb + frozenGb;
   const peers = Math.max(indexerCount, 1);

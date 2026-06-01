@@ -4,15 +4,13 @@ import type { GuideStep } from '../types';
 export const distributedNcSteps: GuideStep[] = [
   {
     id: 'nc-indexer',
-    phase: 'STEP 4',
-    title: 'Configure standalone indexer',
     profiles: ['distributed_nc'],
     targets: ['idx1'],
-    docLinks: [{ label: 'Distributed deployment', url: GUIDE_DOC_LINKS.managementComponents }],
+    docLinks: [{ labelKey: 'guide.docs.managementComponents', url: GUIDE_DOC_LINKS.managementComponents }],
     blocks: [
       {
         type: 'commands',
-        content: 'On indexer {{IDX1_HOST}} ({{IDX1_IP}}):',
+        contentKey: 'steps.nc-indexer.blocks.configure',
         commands: [
           '/opt/splunk/bin/splunk set servername {{IDX1_HOST}}',
           '/opt/splunk/bin/splunk enable listen 9997',
@@ -21,21 +19,27 @@ export const distributedNcSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content: 'MC role: Settings → Monitoring Console → Edit Server Roles → Indexer.',
+        contentKey: 'steps.nc-indexer.blocks.mc-role',
+      },
+    ],
+    validations: [
+      {
+        id: 'listen',
+        labelKey: 'steps.nc-indexer.validations.listen.label',
+        command: '/opt/splunk/bin/splunk show listen',
+        expectKey: 'steps.nc-indexer.validations.listen.expect',
       },
     ],
   },
   {
     id: 'nc-search-head',
-    phase: 'STEP 5',
-    title: 'Configure search head',
     profiles: ['distributed_nc'],
     targets: ['sh1'],
-    docLinks: [{ label: 'Distributed search', url: GUIDE_DOC_LINKS.indexerCluster }],
+    docLinks: [{ labelKey: 'guide.docs.indexerCluster', url: GUIDE_DOC_LINKS.indexerCluster }],
     blocks: [
       {
         type: 'commands',
-        content: 'On search head {{SH1_HOST}}:',
+        contentKey: 'steps.nc-search-head.blocks.configure',
         commands: [
           '/opt/splunk/bin/splunk set servername {{SH1_HOST}}',
           '/opt/splunk/bin/splunk add search-server https://{{IDX1_IP}}:8089 -remoteUsername admin -remotePassword {{ADMIN_PASSWORD}}',
@@ -44,7 +48,14 @@ export const distributedNcSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content: 'Enable HTTPS on Splunk Web. MC role: Search Head.',
+        contentKey: 'steps.nc-search-head.blocks.https-mc',
+      },
+    ],
+    validations: [
+      {
+        id: 'search-server',
+        labelKey: 'steps.nc-search-head.validations.search-server.label',
+        expectKey: 'steps.nc-search-head.validations.search-server.expect',
       },
     ],
   },
@@ -53,15 +64,13 @@ export const distributedNcSteps: GuideStep[] = [
 export const singleServerSteps: GuideStep[] = [
   {
     id: 'single-roles',
-    phase: 'STEP 4',
-    title: 'Configure combined instance roles',
     profiles: ['single'],
     targets: ['combined'],
-    docLinks: [{ label: 'SVA single server', url: GUIDE_DOC_LINKS.sva }],
+    docLinks: [{ labelKey: 'guide.docs.sva', url: GUIDE_DOC_LINKS.sva }],
     blocks: [
       {
         type: 'commands',
-        content: 'On combined server:',
+        contentKey: 'steps.single-roles.blocks.configure',
         commands: [
           '/opt/splunk/bin/splunk set servername {{MGMT_HOST}}-single',
           '/opt/splunk/bin/splunk enable listen 9997',
@@ -70,8 +79,15 @@ export const singleServerSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content:
-          'MC roles: License Manager, Deployment Server, Monitoring Console, Indexer, Search Head (all on one instance for lab).',
+        contentKey: 'steps.single-roles.blocks.mc-roles',
+      },
+    ],
+    validations: [
+      {
+        id: 'listen',
+        labelKey: 'steps.single-roles.validations.listen.label',
+        command: '/opt/splunk/bin/splunk show listen',
+        expectKey: 'steps.single-roles.validations.listen.expect',
       },
     ],
   },

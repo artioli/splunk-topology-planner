@@ -7,7 +7,7 @@ export interface ClampedClusterFactors {
   indexerCount: number;
   replicationFactor: number;
   searchFactor: number;
-  warnings: string[];
+  warnings: I18nMessage[];
 }
 
 export function clampIndexerCount(count: number): number {
@@ -15,22 +15,28 @@ export function clampIndexerCount(count: number): number {
 }
 
 /** SF ≤ RF ≤ indexer count */
+import type { I18nMessage } from './types';
+
+export function msg(key: string, params?: Record<string, string | number>): I18nMessage {
+  return params ? { key, params } : { key };
+}
+
 export function clampReplicationAndSearchFactors(
   replicationFactor: number,
   searchFactor: number,
   indexerCount: number,
-): { replicationFactor: number; searchFactor: number; warnings: string[] } {
-  const warnings: string[] = [];
+): { replicationFactor: number; searchFactor: number; warnings: I18nMessage[] } {
+  const warnings: I18nMessage[] = [];
   let rf = Math.min(MAX_RF_SF, Math.max(1, Math.floor(replicationFactor)));
   let sf = Math.min(MAX_RF_SF, Math.max(1, Math.floor(searchFactor)));
   const peers = clampIndexerCount(indexerCount);
 
   if (rf > peers) {
-    warnings.push(`Replication factor lowered from ${rf} to ${peers} (cannot exceed indexer count).`);
+    warnings.push(msg('advisory.rfLowered', { from: rf, to: peers }));
     rf = peers;
   }
   if (sf > rf) {
-    warnings.push(`Search factor lowered from ${sf} to ${rf} (cannot exceed replication factor).`);
+    warnings.push(msg('advisory.sfLowered', { from: sf, to: rf }));
     sf = rf;
   }
 

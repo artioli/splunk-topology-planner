@@ -4,20 +4,18 @@ import type { GuideStep } from '../types';
 export const forwarderAppendixSteps: GuideStep[] = [
   {
     id: 'uf-install',
-    phase: 'APPENDIX A',
-    title: 'Install Universal Forwarder',
     profiles: ['single', 'distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
     targets: ['uf-all'],
     optional: true,
-    docLinks: [{ label: 'Install Universal Forwarder', url: GUIDE_DOC_LINKS.forwarders }],
+    docLinks: [{ labelKey: 'guide.docs.forwarders', url: GUIDE_DOC_LINKS.forwarders }],
     blocks: [
       {
         type: 'text',
-        content: 'Optional appendix. Install UF on forwarder hosts only — not on Splunk Enterprise servers.',
+        contentKey: 'steps.uf-install.blocks.intro',
       },
       {
         type: 'commands',
-        content: 'On each UF host:',
+        contentKey: 'steps.uf-install.blocks.install',
         commands: [
           'wget -O splunkforwarder-{{SPLUNK_VERSION}}-linux-amd64.tgz "https://download.splunk.com/products/universalforwarder/releases/{{SPLUNK_VERSION}}/linux/splunkforwarder-{{SPLUNK_VERSION}}-linux-amd64.tgz"',
           'sudo mkdir -p /opt/splunkforwarder && sudo chown {{OS_USER}}:{{OS_USER}} /opt/splunkforwarder',
@@ -27,19 +25,25 @@ export const forwarderAppendixSteps: GuideStep[] = [
         ],
       },
     ],
+    validations: [
+      {
+        id: 'uf',
+        labelKey: 'steps.uf-install.validations.uf.label',
+        command: '/opt/splunkforwarder/bin/splunk status',
+        expectKey: 'steps.uf-install.validations.uf.expect',
+      },
+    ],
   },
   {
     id: 'uf-ds-poll',
-    phase: 'APPENDIX B',
-    title: 'Forwarders poll Deployment Server',
     profiles: ['single', 'distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
     targets: ['uf-all'],
     optional: true,
-    docLinks: [{ label: 'Deployment server', url: GUIDE_DOC_LINKS.deploymentServer }],
+    docLinks: [{ labelKey: 'guide.docs.deploymentServer', url: GUIDE_DOC_LINKS.deploymentServer }],
     blocks: [
       {
         type: 'commands',
-        content: 'Point UF to DS (or mgmt if DS colocated):',
+        contentKey: 'steps.uf-ds-poll.blocks.configure',
         commands: [
           '/opt/splunkforwarder/bin/splunk set deploy-poll {{DS_IP}}:8089',
           '/opt/splunkforwarder/bin/splunk restart',
@@ -47,42 +51,66 @@ export const forwarderAppendixSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content:
-          'On DS: **Settings → Forwarder Management** — create server classes and assign forwarders. Enable forwarder monitoring in MC.',
+        contentKey: 'steps.uf-ds-poll.blocks.server-class',
+      },
+    ],
+    validations: [
+      {
+        id: 'poll',
+        labelKey: 'steps.uf-ds-poll.validations.poll.label',
+        expectKey: 'steps.uf-ds-poll.validations.poll.expect',
       },
     ],
   },
   {
     id: 'indexer-discovery',
-    phase: 'APPENDIX C',
-    title: 'Indexer discovery for forwarder outputs',
     profiles: ['distributed_ic', 'distributed_ic_shc'],
     targets: ['cm', 'ds'],
     optional: true,
-    docLinks: [{ label: 'Indexer discovery', url: GUIDE_DOC_LINKS.deploymentServer }],
+    docLinks: [{ labelKey: 'guide.docs.deploymentServer', url: GUIDE_DOC_LINKS.deploymentServer }],
     blocks: [
       {
         type: 'commands',
-        content: 'On Cluster Manager — enable indexer discovery:',
-        commands: [
-          'vi /opt/splunk/etc/system/local/server.conf',
-          '[indexer_discovery]',
-          'pass4SymmKey = {{CLUSTER_FWD_SECRET}}',
-          '/opt/splunk/bin/splunk restart',
-        ],
+        contentKey: 'steps.indexer-discovery.blocks.open-server-conf',
+        commands: ['vi /opt/splunk/etc/system/local/server.conf'],
       },
       {
         type: 'commands',
-        content: 'Deployment app outputs.conf example:',
+        contentKey: 'steps.indexer-discovery.blocks.paste-discovery',
+        copyAsBlock: true,
+        commands: ['[indexer_discovery]', 'pass4SymmKey = {{CLUSTER_FWD_SECRET}}'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.indexer-discovery.blocks.restart',
+        commands: ['/opt/splunk/bin/splunk restart'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.indexer-discovery.blocks.tcpout-stanza',
+        copyAsBlock: true,
         commands: [
           '[tcpout:default-autolb-group]',
           'indexerDiscovery = idxc1',
           'useACK = true',
-          '',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.indexer-discovery.blocks.idxc-stanza',
+        copyAsBlock: true,
+        commands: [
           '[indexer_discovery:idxc1]',
           'master_uri = https://{{CM_IP}}:8089',
           'pass4SymmKey = {{CLUSTER_FWD_SECRET}}',
         ],
+      },
+    ],
+    validations: [
+      {
+        id: 'discovery',
+        labelKey: 'steps.indexer-discovery.validations.discovery.label',
+        expectKey: 'steps.indexer-discovery.validations.discovery.expect',
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { DOC_LINKS, SIZING } from './constants';
+import { SIZING } from './constants';
 import type { ManagementHostPlan, ManagementPlan, PlannerInputs } from './types';
 
 type MgmtRole = 'Deployment Server' | 'Cluster Manager' | 'SHC Deployer' | 'License Manager' | 'Monitoring Console';
@@ -118,7 +118,6 @@ export function buildManagementPlan(
 
   const suggestions: string[] = [
     'Never colocate Deployment Server and Cluster Manager.',
-    `Reference: <a href="${DOC_LINKS.management104}" target="_blank" rel="noopener">Management components (10.4)</a>`,
   ];
 
   if (inputs.forwarderClientCount > SIZING.DS_DEDICATED_CLIENT_THRESHOLD) {

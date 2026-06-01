@@ -1,3 +1,4 @@
+import { msg } from './clusterFactors';
 import { SIZING, SVA_NAMES } from './constants';
 import {
   getOsDiskGb,
@@ -12,6 +13,7 @@ import {
 import { getPerformanceRecommendation } from './performanceRecommendations';
 import { resolveTopologySettings } from './topologyResolver';
 import type {
+  I18nMessage,
   PlannerInputs,
   ResiliencyFamily,
   ServerInventoryRow,
@@ -56,8 +58,8 @@ function addRow(
 }
 
 export function computeTopology(inputs: PlannerInputs): TopologyResult {
-  const warnings: string[] = [];
-  const advisories: string[] = [];
+  const warnings: I18nMessage[] = [];
+  const advisories: I18nMessage[] = [];
   const settings = resolveTopologySettings(inputs);
 
   warnings.push(...settings.topologyWarnings);
@@ -77,48 +79,58 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
   const perf = getPerformanceRecommendation(inputs.dailyIngestGb, inputs.concurrentUsers);
   if (singleServer) {
     if (inputs.dailyIngestGb > 300) {
-      warnings.push('Single-instance (S1) is not recommended above ~300 GB/day.');
+      warnings.push(msg('advisory.singleServerNotRecommended'));
     }
-    advisories.push('S1: all core roles run on a single combined instance.');
+    advisories.push(msg('advisory.s1Combined'));
   } else {
-    advisories.push(`Indexing tier (auto): ${prefixLabel}`);
+    advisories.push(msg('advisory.indexingTier', { prefixLabel }));
     if (perf.useCombinedInstance && inputs.dailyIngestGb < 300) {
-      advisories.push(perf.summary + ' A single-server deployment may fit this profile.');
+      advisories.push(msg('advisory.perfCombined', { summary: perf.summary }));
     } else if (indexerCount < perf.recommendedIndexers) {
       advisories.push(
-        `${perf.summary} Table guideline: ${perf.recommendedIndexers} indexer(s); plan uses ${indexerCount}.`,
+        msg('advisory.perfUnder', {
+          summary: perf.summary,
+          recommendedIndexers: perf.recommendedIndexers,
+          indexers: indexerCount,
+        }),
       );
     } else {
-      advisories.push(perf.summary);
+      advisories.push(msg('advisory.perfSummary', { summary: perf.summary }));
     }
   }
 
   if (inputs.dailyIngestGb > clusterEstimation.maxVolumePerIndexGb * indexerCount && !singleServer) {
     warnings.push(
-      `Daily ingest exceeds ~${clusterEstimation.maxVolumePerIndexGb} GB/day × ${indexerCount} indexer(s).`,
+      msg('advisory.ingestExceeds', {
+        maxVolumePerIndexGb: clusterEstimation.maxVolumePerIndexGb,
+        indexers: indexerCount,
+      }),
     );
   }
 
   if (inputs.enterpriseSecurity && inputs.itsi) {
-    advisories.push('Enterprise Security and ITSI cannot share the same search head. Separate dedicated search tiers are required.');
+    advisories.push(msg('advisory.esItsiSeparate'));
   }
 
   if (inputs.itsi && !hasShc) {
-    advisories.push('For ITSI beyond ~200 KPIs, a search head cluster is recommended for stability.');
+    advisories.push(msg('advisory.itsiShcRecommend'));
   }
 
   if (!singleServer) {
     advisories.push(
-      `Cluster: ${indexerCount} indexers, RF=${settings.replicationFactor}, SF=${settings.searchFactor}` +
-        (clusterEstimation.autoEnabled ? ' (auto estimation)' : ' (manual)'),
+      msg('advisory.cluster', {
+        indexers: indexerCount,
+        rf: settings.replicationFactor,
+        sf: settings.searchFactor,
+        autoSuffixKey: clusterEstimation.autoEnabled
+          ? 'advisory.clusterAutoSuffix'
+          : 'advisory.clusterManualSuffix',
+      }),
     );
   }
 
-  advisories.push('Multi-site deployment (M prefix) — coming soon.');
-  advisories.push('Never colocate Deployment Server and Cluster Manager on the same host.');
-
   if (inputs.environment === 'virtual') {
-    advisories.push('Virtual: reserve CPU/RAM; use thick-provisioned disks for indexers.');
+    advisories.push(msg('advisory.virtual'));
   }
 
   const svaCode = buildSvaCode(prefix, baseSuffix, inputs.enterpriseSecurity);
@@ -183,13 +195,13 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
     }
 
     if (inputs.enterpriseSecurity) {
-      advisories.push('Enterprise Security: isolated search tier (+10 SVA). KV Store on ES search heads (8065, 8191).');
+      advisories.push(msg('advisory.esKvStore'));
     }
     if (inputs.itsi) {
-      advisories.push('ITSI: real-time searches cannot be disabled on ITSI tiers.');
+      advisories.push(msg('advisory.itsiRealtime'));
     }
     if (hasShc) {
-      advisories.push('SHC: configure load balancer cookie-based sticky sessions on TCP/8000.');
+      advisories.push(msg('advisory.shcLb'));
     }
 
     return {

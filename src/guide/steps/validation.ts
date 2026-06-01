@@ -4,18 +4,16 @@ import type { GuideStep } from '../types';
 export const validationSteps: GuideStep[] = [
   {
     id: 'validation',
-    phase: 'STEP 10',
-    title: 'Validation and health check',
     profiles: ['single', 'distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
     targets: ['mgmt', 'combined'],
     docLinks: [
-      { label: 'Monitoring Console health', url: GUIDE_DOC_LINKS.monitoringConsole },
-      { label: 'Network ports', url: GUIDE_DOC_LINKS.networkPorts },
+      { labelKey: 'guide.docs.monitoringConsole', url: GUIDE_DOC_LINKS.monitoringConsole },
+      { labelKey: 'guide.docs.networkPorts', url: GUIDE_DOC_LINKS.networkPorts },
     ],
     blocks: [
       {
         type: 'commands',
-        content: 'CLI checks:',
+        contentKey: 'steps.validation.blocks.cli-checks',
         commands: [
           '/opt/splunk/bin/splunk list licenser-slaves',
           '/opt/splunk/bin/splunk show cluster-status',
@@ -25,13 +23,18 @@ export const validationSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content:
-          'Splunk Web → **Settings → Monitoring Console → Health Check**. All checks should pass (hardware warnings may appear in undersized labs).',
+        contentKey: 'steps.validation.blocks.mc-health',
       },
       {
         type: 'text',
-        content:
-          'Confirm internal logs are forwarding from management/search tiers to indexers when indexing is disabled on those nodes.',
+        contentKey: 'steps.validation.blocks.internal-forward',
+      },
+    ],
+    validations: [
+      {
+        id: 'health',
+        labelKey: 'steps.validation.validations.health.label',
+        expectKey: 'steps.validation.validations.health.expect',
       },
     ],
   },

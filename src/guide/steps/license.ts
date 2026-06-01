@@ -6,20 +6,17 @@ const ALL_PROFILES = ['single', 'distributed_nc', 'distributed_ic', 'distributed
 export const licenseSteps: GuideStep[] = [
   {
     id: 'license-manager',
-    phase: 'STEP 3',
-    title: 'Configure License Manager',
     profiles: [...ALL_PROFILES],
     targets: ['mgmt', 'combined'],
-    docLinks: [{ label: 'Configure a license manager', url: GUIDE_DOC_LINKS.licenseManager }],
+    docLinks: [{ labelKey: 'guide.docs.licenseManager', url: GUIDE_DOC_LINKS.licenseManager }],
     blocks: [
       {
         type: 'text',
-        content:
-          'On the management host (or combined server for single-server). Never store production license files in public repos.',
+        contentKey: 'steps.license-manager.blocks.intro',
       },
       {
         type: 'commands',
-        content: 'Add license and set server name:',
+        contentKey: 'steps.license-manager.blocks.add-license',
         commands: [
           'ssh {{OS_USER}}@{{MGMT_IP}}',
           '/opt/splunk/bin/splunk status',
@@ -32,27 +29,30 @@ export const licenseSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content:
-          'Via Splunk Web: **Settings → Server settings → General settings** — enable HTTPS. **Settings → Licensing** — verify license.',
+        contentKey: 'steps.license-manager.blocks.web-https',
       },
       {
         type: 'text',
-        content:
-          '**Settings → Monitoring Console → Settings → General Setup → Edit Server Roles** — enable License Manager and Deployment Server (when DS is colocated).',
+        contentKey: 'steps.license-manager.blocks.mc-roles',
+      },
+    ],
+    validations: [
+      {
+        id: 'license',
+        labelKey: 'steps.license-manager.validations.license.label',
+        expectKey: 'steps.license-manager.validations.license.expect',
       },
     ],
   },
   {
     id: 'license-slaves',
-    phase: 'STEP 3b',
-    title: 'Register license slaves',
     profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
     targets: ['idx-all', 'sh-all', 'cm', 'deployer', 'ds'],
-    docLinks: [{ label: 'License manager', url: GUIDE_DOC_LINKS.licenseManager }],
+    docLinks: [{ labelKey: 'guide.docs.licenseManager', url: GUIDE_DOC_LINKS.licenseManager }],
     blocks: [
       {
         type: 'commands',
-        content: 'On every non-LM Splunk instance:',
+        contentKey: 'steps.license-slaves.blocks.register',
         commands: [
           '/opt/splunk/bin/splunk edit licenser-localslave -master_uri https://{{LM_IP}}:8089',
           '/opt/splunk/bin/splunk restart',
@@ -60,22 +60,35 @@ export const licenseSteps: GuideStep[] = [
       },
       {
         type: 'commands',
-        content: 'Verify on License Manager:',
+        contentKey: 'steps.license-slaves.blocks.verify',
         commands: ['/opt/splunk/bin/splunk list licenser-slaves'],
+      },
+    ],
+    validations: [
+      {
+        id: 'slaves',
+        labelKey: 'steps.license-slaves.validations.slaves.label',
+        command: '/opt/splunk/bin/splunk list licenser-slaves',
+        expectKey: 'steps.license-slaves.validations.slaves.expect',
       },
     ],
   },
   {
     id: 'license-slave-single',
-    phase: 'STEP 3b',
-    title: 'License on single server',
     profiles: ['single'],
     targets: ['combined'],
-    docLinks: [{ label: 'License manager', url: GUIDE_DOC_LINKS.licenseManager }],
+    docLinks: [{ labelKey: 'guide.docs.licenseManager', url: GUIDE_DOC_LINKS.licenseManager }],
     blocks: [
       {
         type: 'text',
-        content: 'Single-server: license is local on the combined instance. Skip slave registration.',
+        contentKey: 'steps.license-slave-single.blocks.intro',
+      },
+    ],
+    validations: [
+      {
+        id: 'local',
+        labelKey: 'steps.license-slave-single.validations.local.label',
+        expectKey: 'steps.license-slave-single.validations.local.expect',
       },
     ],
   },

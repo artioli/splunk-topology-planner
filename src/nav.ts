@@ -1,41 +1,78 @@
+import { getLocale, setLocale, t } from './i18n';
+import type { Locale } from './i18n/types';
 import { cycleTheme, getStoredTheme, themeToggleLabel } from './theme';
 
 export type AppRoute = 'planner' | 'guide';
 
 export function getRoute(): AppRoute {
   const hash = window.location.hash.replace(/^#/, '') || 'planner';
-  return hash === 'guide' ? 'guide' : 'planner';
+  const route = hash.split('?')[0].split('&')[0];
+  return route === 'guide' ? 'guide' : 'planner';
+}
+
+export function getHashParams(): URLSearchParams {
+  const hash = window.location.hash.replace(/^#/, '');
+  const query = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
+  return new URLSearchParams(query);
+}
+
+function localeOptions(): string {
+  const locales: { id: Locale; label: string }[] = [
+    { id: 'en', label: 'English' },
+    { id: 'pt', label: 'Português' },
+    { id: 'es', label: 'Español' },
+  ];
+  const current = getLocale();
+  return locales
+    .map((l) => `<option value="${l.id}" ${current === l.id ? 'selected' : ''}>${l.label}</option>`)
+    .join('');
 }
 
 export function renderNav(active: AppRoute): string {
   const theme = getStoredTheme();
   return `
     <nav class="app-nav app-nav--top" aria-label="Main">
-      <div class="nav-brand">Splunk Planner</div>
+      <div class="nav-brand">${escapeHtml(t('nav.brand'))}</div>
       <div class="nav-links nav-links--desktop">
-        <a href="#planner" class="nav-link ${active === 'planner' ? 'active' : ''}">Topology Planner</a>
-        <a href="#guide" class="nav-link ${active === 'guide' ? 'active' : ''}">Deployment Guide</a>
+        <a href="#planner" class="nav-link ${active === 'planner' ? 'active' : ''}">${escapeHtml(t('nav.planner'))}</a>
+        <a href="#guide" class="nav-link ${active === 'guide' ? 'active' : ''}">${escapeHtml(t('nav.guide'))}</a>
       </div>
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle color theme">
-        ${themeToggleLabel(theme)}
-      </button>
+      <div class="nav-actions">
+        <label class="nav-lang">
+          <span class="nav-lang-label">${escapeHtml(t('nav.langLabel'))}</span>
+          <select id="locale-select" aria-label="${escapeHtml(t('nav.langLabel'))}">${localeOptions()}</select>
+        </label>
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="${escapeHtml(t('nav.themeToggle'))}">
+          ${themeToggleLabel(theme)}
+        </button>
+      </div>
     </nav>
     <nav class="app-nav app-nav--bottom" aria-label="Mobile">
       <a href="#planner" class="nav-tab ${active === 'planner' ? 'active' : ''}">
         <span class="nav-tab-icon" aria-hidden="true">📊</span>
-        <span>Planner</span>
+        <span>${escapeHtml(t('nav.planner'))}</span>
       </a>
       <a href="#guide" class="nav-tab ${active === 'guide' ? 'active' : ''}">
         <span class="nav-tab-icon" aria-hidden="true">📋</span>
-        <span>Guide</span>
+        <span>${escapeHtml(t('nav.guide'))}</span>
       </a>
     </nav>`;
 }
 
-export function bindNavEvents(container: HTMLElement): void {
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+export function bindNavEvents(container: HTMLElement, onLocaleChange?: () => void): void {
   container.querySelector('#theme-toggle')?.addEventListener('click', () => {
     const next = cycleTheme();
     const btn = container.querySelector('#theme-toggle');
     if (btn) btn.textContent = themeToggleLabel(next);
+  });
+
+  container.querySelector('#locale-select')?.addEventListener('change', (e) => {
+    const locale = (e.target as HTMLSelectElement).value as Locale;
+    setLocale(locale, true);
+    onLocaleChange?.();
   });
 }

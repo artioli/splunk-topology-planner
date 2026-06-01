@@ -4,15 +4,13 @@ import type { GuideStep } from '../types';
 export const shcSteps: GuideStep[] = [
   {
     id: 'shc-deployer',
-    phase: 'STEP 6',
-    title: 'Configure SHC Deployer',
     profiles: ['distributed_ic_shc'],
     targets: ['deployer'],
-    docLinks: [{ label: 'Deployer requirements', url: GUIDE_DOC_LINKS.deployer }],
+    docLinks: [{ labelKey: 'guide.docs.deployer', url: GUIDE_DOC_LINKS.deployer }],
     blocks: [
       {
         type: 'commands',
-        content: 'On deployer {{DEPLOYER_HOST}}:',
+        contentKey: 'steps.shc-deployer.blocks.configure',
         commands: [
           '/opt/splunk/bin/splunk set servername {{DEPLOYER_HOST}}',
           '/opt/splunk/bin/splunk edit cluster-config -mode searchhead -manager_uri https://{{CM_IP}}:8089 -secret {{CLUSTER_SECRET}}',
@@ -20,22 +18,27 @@ export const shcSteps: GuideStep[] = [
         ],
       },
     ],
+    validations: [
+      {
+        id: 'deployer',
+        labelKey: 'steps.shc-deployer.validations.deployer.label',
+        expectKey: 'steps.shc-deployer.validations.deployer.expect',
+      },
+    ],
   },
   {
     id: 'shc-members',
-    phase: 'STEP 7',
-    title: 'Initialize search head cluster members',
     profiles: ['distributed_ic_shc'],
     targets: ['sh-all'],
-    docLinks: [{ label: 'Deploy a search head cluster', url: GUIDE_DOC_LINKS.searchHeadCluster }],
+    docLinks: [{ labelKey: 'guide.docs.searchHeadCluster', url: GUIDE_DOC_LINKS.searchHeadCluster }],
     blocks: [
       {
         type: 'text',
-        content: 'Minimum 3 SHC members. Captain election requires odd member count (3, 5, …).',
+        contentKey: 'steps.shc-members.blocks.intro',
       },
       {
         type: 'commands',
-        content: 'On first member ({{SH1_HOST}}) — initialize cluster:',
+        contentKey: 'steps.shc-members.blocks.init-first',
         commands: [
           '/opt/splunk/bin/splunk init shcluster-config -auth admin:{{ADMIN_PASSWORD}} -mgmt_uri https://{{SH1_IP}}:8089 -replication_port 8181 -replication_factor 3 -conf_deploy_fetch_url https://{{DEPLOYER_IP}}:8089 -secret {{CLUSTER_SECRET}} -shcluster_label shc1',
           '/opt/splunk/bin/splunk restart',
@@ -43,7 +46,7 @@ export const shcSteps: GuideStep[] = [
       },
       {
         type: 'commands',
-        content: 'On members 2 and 3 — join cluster:',
+        contentKey: 'steps.shc-members.blocks.join-members',
         commands: [
           '/opt/splunk/bin/splunk init shcluster-config -auth admin:{{ADMIN_PASSWORD}} -mgmt_uri https://<SH_IP>:8089 -replication_port 8181 -replication_factor 3 -conf_deploy_fetch_url https://{{DEPLOYER_IP}}:8089 -secret {{CLUSTER_SECRET}} -shcluster_label shc1',
           '/opt/splunk/bin/splunk restart',
@@ -51,25 +54,31 @@ export const shcSteps: GuideStep[] = [
       },
       {
         type: 'commands',
-        content: 'Elect captain (on any member):',
+        contentKey: 'steps.shc-members.blocks.elect-captain',
         commands: [
           '/opt/splunk/bin/splunk bootstrap shcluster-captain -servers_list "{{SH1_IP}}:8089,{{SH2_IP}}:8089,{{SH3_IP}}:8089"',
           '/opt/splunk/bin/splunk list shcluster-members',
         ],
       },
     ],
+    validations: [
+      {
+        id: 'members',
+        labelKey: 'steps.shc-members.validations.members.label',
+        command: '/opt/splunk/bin/splunk list shcluster-members',
+        expectKey: 'steps.shc-members.validations.members.expect',
+      },
+    ],
   },
   {
     id: 'shc-dedicated-ds',
-    phase: 'STEP 6b',
-    title: 'Configure dedicated Deployment Server',
     profiles: ['distributed_ic_shc'],
     targets: ['ds'],
-    docLinks: [{ label: 'Deployment server', url: GUIDE_DOC_LINKS.deploymentServer }],
+    docLinks: [{ labelKey: 'guide.docs.deploymentServer', url: GUIDE_DOC_LINKS.deploymentServer }],
     blocks: [
       {
         type: 'commands',
-        content: 'On DS {{DS_HOST}} — dedicated (not colocated with CM):',
+        contentKey: 'steps.shc-dedicated-ds.blocks.configure',
         commands: [
           '/opt/splunk/bin/splunk set servername {{DS_HOST}}',
           '/opt/splunk/bin/splunk restart',
@@ -77,7 +86,14 @@ export const shcSteps: GuideStep[] = [
       },
       {
         type: 'text',
-        content: 'MC role: Deployment Server.',
+        contentKey: 'steps.shc-dedicated-ds.blocks.mc-role',
+      },
+    ],
+    validations: [
+      {
+        id: 'ds',
+        labelKey: 'steps.shc-dedicated-ds.validations.ds.label',
+        expectKey: 'steps.shc-dedicated-ds.validations.ds.expect',
       },
     ],
   },

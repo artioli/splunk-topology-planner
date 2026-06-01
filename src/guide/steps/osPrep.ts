@@ -4,36 +4,38 @@ import type { GuideStep } from '../types';
 export const osPrepSteps: GuideStep[] = [
   {
     id: 'os-prep',
-    phase: 'STEP 1',
-    title: 'OS prerequisites (all Splunk Enterprise hosts)',
     profiles: ['single', 'distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
     targets: ['all-splunk'],
     docLinks: [
-      { label: 'Reference hardware', url: GUIDE_DOC_LINKS.referenceHardware },
-      { label: 'Capacity planning', url: GUIDE_DOC_LINKS.capacityManual },
+      { labelKey: 'guide.docs.referenceHardware', url: GUIDE_DOC_LINKS.referenceHardware },
+      { labelKey: 'guide.docs.capacityManual', url: GUIDE_DOC_LINKS.capacityManual },
     ],
     blocks: [
       {
         type: 'text',
-        content:
-          'Create OS user **{{OS_USER}}** on every Splunk host. Splunk should not run as root. Use dedicated data volumes for indexers.',
+        contentKey: 'steps.os-prep.blocks.intro',
       },
       {
         type: 'commands',
-        content: 'Create splunkuser (run as root on each host):',
-        commands: [
-          'sudo useradd -m -s /bin/bash {{OS_USER}}',
-          'sudo passwd {{OS_USER}}',
-        ],
+        contentKey: 'steps.os-prep.blocks.create-user',
+        commands: ['sudo useradd -m -s /bin/bash {{OS_USER}}', 'sudo passwd {{OS_USER}}'],
       },
       {
         type: 'commands',
-        content: 'RHEL — check and set ulimits for {{OS_USER}} in /etc/security/limits.conf:',
+        contentKey: 'steps.os-prep.blocks.ulimits-check',
+        distros: ['rhel'],
+        commands: ['ulimit -Sa', 'ulimit -Ha'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.limits-open',
+        commands: ['sudo vi /etc/security/limits.conf'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.limits-append',
+        copyAsBlock: true,
         commands: [
-          'ulimit -Sa',
-          'ulimit -Ha',
-          'sudo vi /etc/security/limits.conf',
-          '# Append:',
           '{{OS_USER}}  soft  nofile  10240',
           '{{OS_USER}}  hard  nofile  64000',
           '{{OS_USER}}  soft  nproc   16000',
@@ -41,24 +43,41 @@ export const osPrepSteps: GuideStep[] = [
         ],
       },
       {
-        type: 'ubuntu',
-        content:
-          'Ubuntu/Debian: use the same limits in `/etc/security/limits.conf`. Package names differ (`apt` vs `yum`); THP path is the same under `/sys/kernel/mm/transparent_hugepage/enabled`.',
+        type: 'text',
+        contentKey: 'steps.os-prep.blocks.selinux',
+        distros: ['rhel'],
+      },
+      {
+        type: 'text',
+        contentKey: 'steps.os-prep.blocks.ubuntu-note',
+        distros: ['ubuntu', 'debian'],
       },
       {
         type: 'commands',
-        content: 'Disable Transparent Huge Pages (THP) — required for Splunk on Linux:',
-        commands: [
-          'cat /sys/kernel/mm/transparent_hugepage/enabled',
-          'sudo vi /etc/default/grub',
-          '# Add to GRUB_CMDLINE_LINUX: transparent_hugepage=never',
-          'sudo grub2-mkconfig -o /boot/grub2/grub.cfg',
-          'sudo reboot',
-        ],
+        contentKey: 'steps.os-prep.blocks.thp-check',
+        commands: ['cat /sys/kernel/mm/transparent_hugepage/enabled'],
       },
       {
         type: 'commands',
-        content: 'RHEL — open required ports with firewalld (preferred over disabling):',
+        contentKey: 'steps.os-prep.blocks.grub-edit',
+        commands: ['sudo vi /etc/default/grub'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.grub-apply',
+        distros: ['rhel'],
+        commands: ['sudo grub2-mkconfig -o /boot/grub2/grub.cfg', 'sudo reboot'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.grub-apply',
+        distros: ['ubuntu', 'debian'],
+        commands: ['sudo update-grub', 'sudo reboot'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.firewalld-ports',
+        distros: ['rhel'],
         commands: [
           'sudo firewall-cmd --permanent --add-port=8000/tcp',
           'sudo firewall-cmd --permanent --add-port=8089/tcp',
@@ -70,9 +89,48 @@ export const osPrepSteps: GuideStep[] = [
         ],
       },
       {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.ufw-ports',
+        distros: ['ubuntu', 'debian'],
+        commands: [
+          'sudo ufw allow 8000/tcp',
+          'sudo ufw allow 8089/tcp',
+          'sudo ufw allow 9997/tcp',
+          'sudo ufw allow 8088/tcp',
+          'sudo ufw allow 8080/tcp',
+          'sudo ufw allow 9887/tcp',
+          'sudo ufw enable',
+        ],
+      },
+      {
         type: 'warning',
-        content:
-          'Lab only: `sudo systemctl stop firewalld && sudo systemctl disable firewalld` — do not use in production.',
+        contentKey: 'steps.os-prep.blocks.firewall-lab',
+        distros: ['rhel'],
+      },
+      {
+        type: 'warning',
+        contentKey: 'steps.os-prep.blocks.firewall-lab-debian',
+        distros: ['ubuntu', 'debian'],
+      },
+    ],
+    validations: [
+      {
+        id: 'limits',
+        labelKey: 'steps.os-prep.validations.limits.label',
+        command: 'ulimit -Sa',
+        expectKey: 'steps.os-prep.validations.limits.expect',
+      },
+      {
+        id: 'thp',
+        labelKey: 'steps.os-prep.validations.thp.label',
+        command: 'cat /sys/kernel/mm/transparent_hugepage/enabled',
+        expectKey: 'steps.os-prep.validations.thp.expect',
+      },
+      {
+        id: 'firewall',
+        labelKey: 'steps.os-prep.validations.firewall.label',
+        expectKey: 'steps.os-prep.validations.firewall.expect',
+        optional: true,
       },
     ],
   },

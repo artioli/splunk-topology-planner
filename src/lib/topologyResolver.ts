@@ -1,7 +1,9 @@
 import { resolveIndexerCount } from './clusterEstimation';
 import { clampIndexerCount, clampReplicationAndSearchFactors } from './clusterFactors';
 import { SIZING } from './constants';
+import { msg } from './clusterFactors';
 import type { ClusterEstimation, PlannerInputs, ResiliencyFamily } from './types';
+import type { I18nMessage } from './types';
 
 export interface ResolvedTopologySettings {
   singleServer: boolean;
@@ -15,7 +17,7 @@ export interface ResolvedTopologySettings {
   replicationFactor: number;
   searchFactor: number;
   clusterEstimation: ClusterEstimation;
-  topologyWarnings: string[];
+  topologyWarnings: I18nMessage[];
 }
 
 export function inferIndexingPrefix(
@@ -53,7 +55,7 @@ export function resolveOperationalSearchHeadCount(
 }
 
 export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopologySettings {
-  const topologyWarnings: string[] = [];
+  const topologyWarnings: I18nMessage[] = [];
   const singleServer = inputs.singleServerDeployment;
 
   const clusterEst = resolveIndexerCount(inputs, inputs.dailyIngestGb, false);
@@ -62,7 +64,11 @@ export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopology
   if (isClustered && indexerCount < SIZING.MIN_CLUSTER_INDEXERS) {
     indexerCount = SIZING.MIN_CLUSTER_INDEXERS;
   }
-  const { prefix, label: prefixLabel } = inferIndexingPrefix(singleServer, indexerCount, isClustered);
+  const { prefix, label: prefixLabel } = inferIndexingPrefix(
+    singleServer,
+    indexerCount,
+    isClustered,
+  );
 
   const hasShc = !singleServer && inputs.searchHeadCluster;
   let operationalSearchHeadCount = singleServer
@@ -70,7 +76,7 @@ export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopology
     : resolveOperationalSearchHeadCount(inputs.searchHeadCount, inputs.searchHeadCluster);
 
   if (hasShc && inputs.searchHeadCount < SIZING.MIN_SHC_MEMBERS) {
-    topologyWarnings.push(`SHC requires at least ${SIZING.MIN_SHC_MEMBERS} search heads.`);
+    topologyWarnings.push(msg('advisory.shcMinMembers', { min: SIZING.MIN_SHC_MEMBERS }));
     operationalSearchHeadCount = SIZING.MIN_SHC_MEMBERS;
   }
 
@@ -79,7 +85,7 @@ export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopology
 
   if (!isClustered) {
     if (replicationFactor !== 1 || searchFactor !== 1) {
-      topologyWarnings.push('Non-clustered deployment: RF and SF set to 1.');
+      topologyWarnings.push(msg('advisory.nonClusterRfSf'));
     }
     replicationFactor = 1;
     searchFactor = 1;

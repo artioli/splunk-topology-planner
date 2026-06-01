@@ -41,6 +41,8 @@ function migrateLegacy(parsed: Record<string, unknown>): PlannerInputs {
   delete base.resiliency;
   delete base.searchTier;
   delete base.multiSite;
+  delete base.multiSiteDeployment;
+  delete base.siteCount;
 
   return base as PlannerInputs;
 }

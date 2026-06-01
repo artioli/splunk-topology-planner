@@ -111,6 +111,11 @@ export interface PerformanceRecommendation {
   summary: string;
 }
 
+export interface I18nMessage {
+  key: string;
+  params?: Record<string, string | number>;
+}
+
 export interface ManagementHostPlan {
   hostLabel: string;
   roles: string[];
@@ -135,8 +140,8 @@ export interface TopologyResult {
   prefix: ResiliencyFamily;
   prefixLabel: string;
   baseSuffix: number;
-  warnings: string[];
-  advisories: string[];
+  warnings: I18nMessage[];
+  advisories: I18nMessage[];
   inventory: ServerInventoryRow[];
   indexerCount: number;
   isClustered: boolean;

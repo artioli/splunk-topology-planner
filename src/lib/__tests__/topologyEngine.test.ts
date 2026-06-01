@@ -51,7 +51,7 @@ describe('topologyEngine', () => {
     });
     expect(t.hasEsSh).toBe(true);
     expect(t.hasItsiSh).toBe(true);
-    expect(t.advisories.some((a) => a.includes('Separate dedicated'))).toBe(true);
+    expect(t.advisories.some((a) => a.key === 'advisory.esItsiSeparate')).toBe(true);
   });
 
   it('manual indexer count when auto off', () => {

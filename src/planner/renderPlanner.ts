@@ -1,12 +1,16 @@
+import { t } from '../i18n';
 import { MAX_INDEXERS, MAX_RF_SF } from '../lib/clusterFactors';
-import { getDefaultMaxVolumeGb, MAX_VOLUME_DEFAULTS } from '../lib/clusterEstimation';
-import { DOC_LINKS, SIZING } from '../lib/constants';
+import { getDefaultMaxVolumeGb } from '../lib/clusterEstimation';
+import { SIZING } from '../lib/constants';
+import { escapeHtml } from '../lib/format';
 import { epsToGbPerDay } from '../lib/ingestCalculator';
 import { normalizePlannerInputs } from '../lib/inputNormalize';
+import { getPerformanceRecommendation } from '../lib/performanceRecommendations';
+import { savePlannerHandoff } from '../lib/plannerHandoff';
 import { runPlanner } from '../lib/planner';
 import { resolveTopologySettings } from '../lib/topologyResolver';
 import type { PlannerInputs, PlannerResult, RetentionPeriod, TimeUnit } from '../lib/types';
-import { renderNav } from '../nav';
+import { bindNavEvents, renderNav } from '../nav';
 import { loadInputs, readRetentionField, saveInputs } from '../storage';
 import { buildMarkdownSummary, renderResults } from '../ui/renderResults';
 import { updateRetentionBarElement } from '../ui/retentionBar';
@@ -25,7 +29,10 @@ function val(id: string): string {
 
 function unitOptions(selected: TimeUnit): string {
   return (['days', 'months', 'years'] as const)
-    .map((u) => `<option value="${u}" ${selected === u ? 'selected' : ''}>${u}</option>`)
+    .map(
+      (u) =>
+        `<option value="${u}" ${selected === u ? 'selected' : ''}>${escapeHtml(t(`planner.units.${u}`))}</option>`,
+    )
     .join('');
 }
 
@@ -38,6 +45,45 @@ function retentionField(prefix: string, label: string, period: RetentionPeriod):
         <select id="${prefix}Unit">${unitOptions(period.unit)}</select>
       </div>
     </div>`;
+}
+
+function getAutoSuggestions(inputs: PlannerInputs): { indexers: number; searchHeads: number } {
+  const ingest = inputs.useEpsInput
+    ? epsToGbPerDay(inputs.eventsPerSecond, inputs.avgEventBytes, inputs.utilization)
+    : inputs.dailyIngestGb;
+  const defaultMax = getDefaultMaxVolumeGb(inputs);
+  const indexers = Math.ceil(ingest / defaultMax);
+  const perf = getPerformanceRecommendation(ingest, inputs.concurrentUsers);
+  let searchHeads = perf.recommendedSearchHeads;
+  if (inputs.searchHeadCluster) {
+    searchHeads = Math.max(SIZING.MIN_SHC_MEMBERS, searchHeads);
+  }
+  return { indexers, searchHeads };
+}
+
+function updateRfSfMax(indexerCount: number): void {
+  const rfMax = Math.max(1, indexerCount);
+  const rfAuto = document.getElementById('replicationFactorAuto') as HTMLInputElement | null;
+  const rfManual = document.getElementById('replicationFactor') as HTMLInputElement | null;
+  const sfAuto = document.getElementById('searchFactorAuto') as HTMLInputElement | null;
+  const sfManual = document.getElementById('searchFactor') as HTMLInputElement | null;
+
+  for (const el of [rfAuto, rfManual]) {
+    if (el) {
+      el.max = String(rfMax);
+      if (Number(el.value) > rfMax) el.value = String(rfMax);
+    }
+  }
+
+  const rf = Number(rfAuto?.classList.contains('is-hidden') ? rfManual?.value : rfAuto?.value) || rfMax;
+  const sfMax = Math.max(1, Math.min(rf, rfMax));
+
+  for (const el of [sfAuto, sfManual]) {
+    if (el) {
+      el.max = String(sfMax);
+      if (Number(el.value) > sfMax) el.value = String(sfMax);
+    }
+  }
 }
 
 function readClusterFactors(): { replicationFactor: number; searchFactor: number } {
@@ -72,7 +118,7 @@ function readInputs(): PlannerInputs {
     hotWarm: readRetentionField('hotWarm'),
     cold: readRetentionField('cold'),
     frozen: readRetentionField('frozen'),
-    archivingMode: val('archivingMode') as PlannerInputs['archivingMode'],
+    archivingMode: 'local',
     autoClusterEstimation: checked('autoClusterEstimation'),
     maxVolumePerIndexGb: num('maxVolumePerIndexGb'),
     manualIndexerCount: num('manualIndexerCount'),
@@ -101,16 +147,49 @@ function updateEpsPanel(): void {
   const utilization = num('utilizationPercent') / 100;
   const computed = epsToGbPerDay(num('eventsPerSecond'), num('avgEventBytes'), utilization);
   const hint = document.getElementById('eps-computed-gb');
-  if (hint) hint.textContent = `Computed ingest: ${computed.toFixed(2)} GB/day`;
+  if (hint) hint.textContent = t('planner.field.epsComputedGb', { value: computed.toFixed(2) });
 }
 
-function updateClusterRfSfVisibility(): void {
-  setVisible('cluster-rf-sf', !checked('singleServerDeployment'));
+function updateClusterRfSfVisibility(indexerCount?: number): void {
+  const single = checked('singleServerDeployment');
+  const count =
+    indexerCount ??
+    resolveTopologySettings(normalizePlannerInputs(readInputs())).indexerCount;
+  const showRfSf = !single && count > 1;
+  setVisible('cluster-rf-sf', showRfSf);
   const auto = checked('autoClusterEstimation');
   document.getElementById('replicationFactor')?.classList.toggle('is-hidden', auto);
   document.getElementById('replicationFactorAuto')?.classList.toggle('is-hidden', !auto);
   document.getElementById('searchFactor')?.classList.toggle('is-hidden', auto);
   document.getElementById('searchFactorAuto')?.classList.toggle('is-hidden', !auto);
+}
+
+function updateSearchHeadAuto(inputs?: PlannerInputs): void {
+  const single = checked('singleServerDeployment');
+  const auto = checked('autoClusterEstimation');
+  const countEl = document.getElementById('searchHeadCount') as HTMLInputElement | null;
+  const hint = document.getElementById('search-head-auto-hint');
+  if (!countEl || single) return;
+
+  if (auto) {
+    const n = inputs ?? readInputs();
+    const ingest = n.useEpsInput
+      ? epsToGbPerDay(n.eventsPerSecond, n.avgEventBytes, n.utilization)
+      : n.dailyIngestGb;
+    const perf = getPerformanceRecommendation(ingest, n.concurrentUsers);
+    let sh = perf.recommendedSearchHeads;
+    if (checked('searchHeadCluster')) {
+      sh = Math.max(SIZING.MIN_SHC_MEMBERS, sh);
+    }
+    countEl.value = String(sh);
+    countEl.disabled = true;
+    if (hint) {
+      hint.textContent = t('planner.field.searchHeadAutoHint');
+    }
+  } else {
+    countEl.disabled = false;
+    if (hint) hint.textContent = '';
+  }
 }
 
 function updateSearchHeadMin(): void {
@@ -124,38 +203,39 @@ function updateSearchHeadMin(): void {
 }
 
 function updateTopologyPanel(partial?: PlannerInputs): void {
+  const inputs = partial ?? readInputs();
   const single = checked('singleServerDeployment');
   setVisible('topology-distributed-fields', !single);
   const auto = checked('autoClusterEstimation');
   setVisible('cluster-manual-fields', !auto && !single);
   setVisible('cluster-auto-summary', auto && !single);
-  updateClusterRfSfVisibility();
+  const resolved = resolveTopologySettings(normalizePlannerInputs(inputs));
+  updateClusterRfSfVisibility(resolved.indexerCount);
+  updateSearchHeadAuto(inputs);
   updateSearchHeadMin();
-
-  const inputs = partial ?? readInputs();
-  const defaultMax = getDefaultMaxVolumeGb(inputs);
+  updateRfSfMax(resolved.indexerCount);
 
   const hint = document.getElementById('inferred-prefix-hint');
   const summary = document.getElementById('cluster-auto-summary');
   if (hint && !single) {
-    hint.textContent =
-      'Indexing tier prefix is chosen automatically from ingest, indexer count, and cluster settings.';
+    hint.textContent = t('planner.field.inferredPrefixHint');
   }
 
   if (!single && auto) {
-    const ingest = inputs.useEpsInput
-      ? epsToGbPerDay(inputs.eventsPerSecond, inputs.avgEventBytes, inputs.utilization)
-      : inputs.dailyIngestGb;
-    const suggested = Math.ceil(ingest / defaultMax);
+    const { indexers, searchHeads } = getAutoSuggestions(inputs);
     const autoHint = document.getElementById('cluster-auto-hint');
     if (autoHint) {
-      autoHint.innerHTML = `Max volume per index: <strong>${defaultMax} GB/day</strong>.`;
+      autoHint.innerHTML = t('planner.field.clusterAutoHint', {
+        maxVolumePerIndexGb: getDefaultMaxVolumeGb(inputs),
+      });
     }
     if (summary) {
-      summary.innerHTML = `<p class="field-hint">Suggested indexers: <strong>${suggested}</strong></p>`;
+      summary.innerHTML = `
+        <p class="field-hint">${escapeHtml(t('planner.field.suggestedIndexers', { indexers }))}</p>
+        <p class="field-hint">${escapeHtml(t('planner.field.suggestedSearchHeads', { searchHeads }))}</p>`;
     }
     const maxVolInput = document.getElementById('maxVolumePerIndexGb') as HTMLInputElement | null;
-    if (maxVolInput) maxVolInput.value = String(defaultMax);
+    if (maxVolInput) maxVolInput.value = String(getDefaultMaxVolumeGb(inputs));
   } else if (summary) {
     summary.innerHTML = '';
   }
@@ -204,18 +284,29 @@ function recalculate(): void {
   if (resultsContainer) resultsContainer.innerHTML = renderResults(result);
 
   const prefixResult = document.getElementById('inferred-prefix-result');
-  if (prefixResult) prefixResult.textContent = result.topology.prefixLabel;
+  if (prefixResult) {
+    prefixResult.textContent = t('planner.field.inferredPrefixResult', {
+      prefixLabel: result.topology.prefixLabel,
+    });
+  }
 
   bindCopySummary(result);
+
+  document.getElementById('deploy-guide-link')?.addEventListener('click', () => {
+    savePlannerHandoff(result);
+  });
 }
 
 function bindCopySummary(result: PlannerResult): void {
+  const copySummaryLabel = t('planner.results.copySummary');
+  const copySummaryShortLabel = t('planner.results.copySummaryShort');
   const handler = async (btn: HTMLButtonElement) => {
     await navigator.clipboard.writeText(buildMarkdownSummary(result));
     const label = btn.textContent;
-    btn.textContent = 'Copied!';
+    btn.textContent = t('planner.results.copied');
     setTimeout(() => {
-      btn.textContent = label?.includes('Markdown') ? 'Copy summary (Markdown)' : 'Copy summary';
+      btn.textContent =
+        label === copySummaryShortLabel ? copySummaryShortLabel : copySummaryLabel;
     }, 2000);
   };
 
@@ -266,8 +357,8 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   container.innerHTML = `
     ${renderNav('planner')}
     <header class="app-header">
-      <h1>Splunk On-Prem Topology Planner</h1>
-      <p class="subtitle">SVA topology, storage, hardware (10.4), firewall ports, management colocation · <a href="#guide">Linux deployment guide</a></p>
+      <h1>${escapeHtml(t('planner.title'))}</h1>
+      <p class="subtitle">${escapeHtml(t('planner.subtitle'))} · <a href="#guide">${escapeHtml(t('planner.subtitleGuideLink'))}</a></p>
       <div class="summary-bar summary-bar--sticky" id="summary-content"></div>
     </header>
 
@@ -275,190 +366,179 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
       <div class="wizard-column">
       <form id="planner-form" class="wizard">
         <section class="panel">
-          <div class="panel-header">1. Workload</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.workload'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="useEpsInput" ${n.useEpsInput ? 'checked' : ''} />
-              <label for="useEpsInput">Calculate ingest from EPS</label>
+              <label for="useEpsInput">${escapeHtml(t('planner.field.useEpsInput'))}</label>
             </div>
             <div id="gb-ingest-fields" class="${n.useEpsInput ? 'is-hidden' : ''}">
               <div class="field">
-                <label for="dailyIngestGb">Daily ingest (GB/day, uncompressed)</label>
+                <label for="dailyIngestGb">${escapeHtml(t('planner.field.dailyIngestGb'))}</label>
                 <input type="number" id="dailyIngestGb" min="0.1" max="50000" step="0.1" value="${n.dailyIngestGb}" />
               </div>
             </div>
             <div id="eps-ingest-fields" class="${n.useEpsInput ? '' : 'is-hidden'}">
               <div class="grid-2">
                 <div class="field">
-                  <label for="eventsPerSecond">Events per second (Y)</label>
+                  <label for="eventsPerSecond">${escapeHtml(t('planner.field.eventsPerSecond'))}</label>
                   <input type="number" id="eventsPerSecond" min="1" value="${n.eventsPerSecond}" />
                 </div>
                 <div class="field">
-                  <label for="avgEventBytes">Average event size (bytes, Z)</label>
+                  <label for="avgEventBytes">${escapeHtml(t('planner.field.avgEventBytes'))}</label>
                   <input type="number" id="avgEventBytes" min="1" value="${n.avgEventBytes}" />
                 </div>
                 <div class="field">
-                  <label for="utilizationPercent">Utilization (W), %</label>
+                  <label for="utilizationPercent">${escapeHtml(t('planner.field.utilizationPercent'))}</label>
                   <input type="number" id="utilizationPercent" min="1" max="100" step="1" value="${Math.round(n.utilization * 100)}" />
-                  <p class="field-hint">Recommended: 60–70%</p>
+                  <p class="field-hint">${escapeHtml(t('planner.field.utilizationHint'))}</p>
                 </div>
               </div>
               <p class="field-hint" id="eps-computed-gb"></p>
-              <p class="field-hint formula-hint">GB/day = ((Y × Z × 3600 × 24) / 1024³) × (W/100)</p>
+              <p class="field-hint formula-hint">${escapeHtml(t('planner.field.epsFormula'))}</p>
             </div>
             <div class="field">
-              <label for="concurrentUsers">Expected concurrent users</label>
+              <label for="concurrentUsers">${escapeHtml(t('planner.field.concurrentUsers'))}</label>
               <input type="number" id="concurrentUsers" min="1" max="500" value="${n.concurrentUsers}" />
-              <p class="field-hint"><a href="${DOC_LINKS.performance104}" target="_blank" rel="noopener">10.4 performance recommendations</a></p>
             </div>
             <div class="field">
-              <label for="peakConcurrentSearches">Peak concurrent searches (optional)</label>
+              <label for="peakConcurrentSearches">${escapeHtml(t('planner.field.peakConcurrentSearches'))}</label>
               <input type="number" id="peakConcurrentSearches" min="0" value="${n.peakConcurrentSearches ?? ''}" />
             </div>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-header">2. Data retention</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.retention'))}</div>
           <div class="panel-body">
-            <div class="grid-2">
-              ${retentionField('hotWarm', 'Hot / warm', n.hotWarm)}
-              ${retentionField('cold', 'Cold', n.cold)}
-              ${retentionField('frozen', 'Frozen / archive', n.frozen)}
-            </div>
-            <div class="field">
-              <label for="archivingMode">Archiving mode</label>
-              <select id="archivingMode">
-                <option value="none" ${n.archivingMode === 'none' ? 'selected' : ''}>None (delete frozen)</option>
-                <option value="local" ${n.archivingMode === 'local' ? 'selected' : ''}>Local archive</option>
-                <option value="clustered-optimized" ${n.archivingMode === 'clustered-optimized' ? 'selected' : ''}>Clustered optimized</option>
-                <option value="clustered-unoptimized" ${n.archivingMode === 'clustered-unoptimized' ? 'selected' : ''}>Clustered un-optimized (×RF)</option>
-              </select>
+            <div class="retention-stack">
+              ${retentionField('hotWarm', t('planner.field.hotWarm'), n.hotWarm)}
+              ${retentionField('cold', t('planner.field.cold'), n.cold)}
+              ${retentionField('frozen', t('planner.field.frozen'), n.frozen)}
             </div>
             <div id="retention-bar-container"></div>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-header">3. Premium applications</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.premium'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="enterpriseSecurity" ${n.enterpriseSecurity ? 'checked' : ''} />
-              <label for="enterpriseSecurity">Enterprise Security (+10 SVA) · max ${MAX_VOLUME_DEFAULTS.es} GB/day/index</label>
+              <label for="enterpriseSecurity">${escapeHtml(t('planner.field.enterpriseSecurity'))}</label>
             </div>
             <div class="checkbox-row">
               <input type="checkbox" id="itsi" ${n.itsi ? 'checked' : ''} />
-              <label for="itsi">IT Service Intelligence · max ${MAX_VOLUME_DEFAULTS.itsi} GB/day/index</label>
+              <label for="itsi">${escapeHtml(t('planner.field.itsi'))}</label>
             </div>
             <p class="field-hint" id="premium-warn"></p>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-header">4. Topology preferences</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.topology'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="singleServerDeployment" ${n.singleServerDeployment ? 'checked' : ''} />
-              <label for="singleServerDeployment">Single Server Deployment (S1) — combined indexer and search</label>
+              <label for="singleServerDeployment">${escapeHtml(t('planner.field.singleServerDeployment'))}</label>
             </div>
             <div id="topology-distributed-fields" class="${n.singleServerDeployment ? 'is-hidden' : ''}">
               <p class="field-hint" id="inferred-prefix-hint"></p>
-              <p class="field-hint">Auto indexing tier: <strong id="inferred-prefix-result">—</strong></p>
+              <p class="field-hint"><strong id="inferred-prefix-result">—</strong></p>
               <div class="checkbox-row">
                 <input type="checkbox" id="autoClusterEstimation" ${n.autoClusterEstimation ? 'checked' : ''} />
-                <label for="autoClusterEstimation">Automatic cluster estimation</label>
+                <label for="autoClusterEstimation">${escapeHtml(t('planner.field.autoClusterEstimation'))}</label>
               </div>
               <p class="field-hint" id="cluster-auto-hint"></p>
               <div id="cluster-auto-summary"></div>
               <div id="cluster-manual-fields" class="${n.autoClusterEstimation ? 'is-hidden' : ''}">
                 <div class="grid-2">
                   <div class="field">
-                    <label for="maxVolumePerIndexGb">Max volume per index (GB/day)</label>
+                    <label for="maxVolumePerIndexGb">${escapeHtml(t('planner.field.maxVolumePerIndexGb'))}</label>
                     <input type="number" id="maxVolumePerIndexGb" min="10" max="5000" value="${n.maxVolumePerIndexGb}" />
                   </div>
                   <div class="field">
-                    <label for="manualIndexerCount">Number of indexers (max ${MAX_INDEXERS})</label>
+                    <label for="manualIndexerCount">${escapeHtml(t('planner.field.manualIndexerCount', { max: MAX_INDEXERS }))}</label>
                     <input type="number" id="manualIndexerCount" min="1" max="${MAX_INDEXERS}" value="${n.manualIndexerCount}" />
                   </div>
                 </div>
               </div>
               <div class="grid-2">
                 <div class="field">
-                  <label for="searchHeadCount">Search heads (quantity)</label>
+                  <label for="searchHeadCount">${escapeHtml(t('planner.field.searchHeadCount'))}</label>
                   <input type="number" id="searchHeadCount" min="1" max="${MAX_INDEXERS}" value="${n.searchHeadCount}" />
+                  <p class="field-hint" id="search-head-auto-hint"></p>
                 </div>
                 <div class="checkbox-row" style="align-self:end">
                   <input type="checkbox" id="searchHeadCluster" ${n.searchHeadCluster ? 'checked' : ''} />
-                  <label for="searchHeadCluster">Search head cluster (SHC, min ${SIZING.MIN_SHC_MEMBERS} members)</label>
+                  <label for="searchHeadCluster">${escapeHtml(t('planner.field.searchHeadCluster', { min: SIZING.MIN_SHC_MEMBERS }))}</label>
                 </div>
               </div>
               <div id="cluster-rf-sf" class="grid-2 cluster-rf-sf">
                 <div class="field">
-                  <label>Replication factor (RF)</label>
+                  <label>${escapeHtml(t('planner.field.replicationFactor'))}</label>
                   <input type="number" id="replicationFactorAuto" min="1" max="${MAX_RF_SF}" value="${n.replicationFactor}" class="${n.autoClusterEstimation ? '' : 'is-hidden'}" />
                   <input type="number" id="replicationFactor" min="1" max="${MAX_RF_SF}" value="${n.replicationFactor}" class="${n.autoClusterEstimation ? 'is-hidden' : ''}" />
-                  <p class="field-hint">RF ≤ indexer count</p>
+                  <p class="field-hint">${escapeHtml(t('planner.field.rfHint'))}</p>
                 </div>
                 <div class="field">
-                  <label>Search factor (SF)</label>
+                  <label>${escapeHtml(t('planner.field.searchFactor'))}</label>
                   <input type="number" id="searchFactorAuto" min="1" max="${MAX_RF_SF}" value="${n.searchFactor}" class="${n.autoClusterEstimation ? '' : 'is-hidden'}" />
                   <input type="number" id="searchFactor" min="1" max="${MAX_RF_SF}" value="${n.searchFactor}" class="${n.autoClusterEstimation ? 'is-hidden' : ''}" />
-                  <p class="field-hint">SF ≤ RF</p>
+                  <p class="field-hint">${escapeHtml(t('planner.field.sfHint'))}</p>
                 </div>
               </div>
-              <p class="field-hint footnote">Multi-site deployment (M prefix) — coming soon.</p>
             </div>
           </div>
         </section>
 
         <section class="panel" id="management-section">
-          <div class="panel-header">5. Management node</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.management'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="managementManualConfig" ${n.managementManualConfig ? 'checked' : ''} />
-              <label for="managementManualConfig">Manual configuration</label>
+              <label for="managementManualConfig">${escapeHtml(t('planner.field.managementManualConfig'))}</label>
             </div>
             <div class="field">
-              <label for="forwarderClientCount">Forwarders / deployment clients</label>
+              <label for="forwarderClientCount">${escapeHtml(t('planner.field.forwarderClientCount'))}</label>
               <input type="number" id="forwarderClientCount" min="0" value="${n.forwarderClientCount}" />
             </div>
             <div id="management-auto-summary" class="${n.managementManualConfig ? 'is-hidden' : ''}">
-              <p class="field-hint">Auto: CM and Deployer dedicated when applicable; LM/MC/DS may colocate if rules allow.</p>
+              <p class="field-hint">${escapeHtml(t('planner.field.managementAutoSummary'))}</p>
             </div>
             <div id="management-manual-fields" class="${n.managementManualConfig ? '' : 'is-hidden'}">
               <div class="checkbox-row">
                 <input type="checkbox" id="dedicateDeploymentServer" ${n.dedicateDeploymentServer ? 'checked' : ''} />
-                <label for="dedicateDeploymentServer">Dedicated Deployment Server (DS)</label>
+                <label for="dedicateDeploymentServer">${escapeHtml(t('planner.field.dedicateDeploymentServer'))}</label>
               </div>
               <div class="checkbox-row" id="mgmt-colocate-cm">
                 <input type="checkbox" id="colocateClusterManager" ${n.colocateClusterManager ? 'checked' : ''} />
-                <label for="colocateClusterManager">Colocate Indexer cluster manager node (CM)</label>
+                <label for="colocateClusterManager">${escapeHtml(t('planner.field.colocateClusterManager'))}</label>
               </div>
               <div class="checkbox-row" id="mgmt-colocate-deployer">
                 <input type="checkbox" id="colocateShcDeployer" ${n.colocateShcDeployer ? 'checked' : ''} />
-                <label for="colocateShcDeployer">Colocate Search head cluster deployer</label>
+                <label for="colocateShcDeployer">${escapeHtml(t('planner.field.colocateShcDeployer'))}</label>
               </div>
               <div class="checkbox-row">
                 <input type="checkbox" id="dedicateLicenseManager" ${n.dedicateLicenseManager ? 'checked' : ''} />
-                <label for="dedicateLicenseManager">Dedicated License Manager (LM)</label>
+                <label for="dedicateLicenseManager">${escapeHtml(t('planner.field.dedicateLicenseManager'))}</label>
               </div>
               <div class="checkbox-row">
                 <input type="checkbox" id="dedicateMonitoringConsole" ${n.dedicateMonitoringConsole ? 'checked' : ''} />
-                <label for="dedicateMonitoringConsole">Dedicated Monitoring Console (MC)</label>
+                <label for="dedicateMonitoringConsole">${escapeHtml(t('planner.field.dedicateMonitoringConsole'))}</label>
               </div>
             </div>
-            <p class="field-hint"><a href="${DOC_LINKS.management104}" target="_blank" rel="noopener">Management components (10.4)</a></p>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-header">6. Environment</div>
+          <div class="panel-header">${escapeHtml(t('planner.panels.environment'))}</div>
           <div class="panel-body">
             <div class="field">
-              <label for="environment">Hosting</label>
+              <label for="environment">${escapeHtml(t('planner.field.environment'))}</label>
               <select id="environment">
-                <option value="physical" ${n.environment === 'physical' ? 'selected' : ''}>Physical / bare metal</option>
-                <option value="virtual" ${n.environment === 'virtual' ? 'selected' : ''}>Virtualized</option>
+                <option value="physical" ${n.environment === 'physical' ? 'selected' : ''}>${escapeHtml(t('planner.field.environmentPhysical'))}</option>
+                <option value="virtual" ${n.environment === 'virtual' ? 'selected' : ''}>${escapeHtml(t('planner.field.environmentVirtual'))}</option>
               </select>
             </div>
           </div>
@@ -471,9 +551,9 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
       </div>
     </main>
 
-    <button type="button" id="jump-results" class="btn jump-results is-hidden">Jump to results</button>
+    <button type="button" id="jump-results" class="btn jump-results is-hidden">${escapeHtml(t('planner.results.jumpToResults'))}</button>
     <div class="mobile-copy-bar">
-      <button type="button" class="btn" id="copy-summary-mobile">Copy summary</button>
+      <button type="button" class="btn" id="copy-summary-mobile">${escapeHtml(t('planner.results.copySummaryShort'))}</button>
     </div>
   `;
 
@@ -482,18 +562,34 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   bindJumpToResults();
 
   const form = document.getElementById('planner-form');
+  let wasAutoCluster = checked('autoClusterEstimation');
+
   const onFormChange = (): void => {
     updateEpsPanel();
     updateTopologyPanel();
     const es = checked('enterpriseSecurity');
     const itsi = checked('itsi');
     const warn = document.getElementById('premium-warn');
-    if (warn) warn.textContent = es && itsi ? 'ES and ITSI require separate search heads.' : '';
+    if (warn) warn.textContent = es && itsi ? t('planner.field.premiumWarn') : '';
     recalculate();
   };
 
   form?.addEventListener('input', onFormChange);
-  form?.addEventListener('change', onFormChange);
+  form?.addEventListener('change', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.id === 'autoClusterEstimation') {
+      const nowAuto = checked('autoClusterEstimation');
+      if (wasAutoCluster && !nowAuto) {
+        const { indexers, searchHeads } = getAutoSuggestions(readInputs());
+        const manualIdx = document.getElementById('manualIndexerCount') as HTMLInputElement | null;
+        const shCount = document.getElementById('searchHeadCount') as HTMLInputElement | null;
+        if (manualIdx) manualIdx.value = String(indexers);
+        if (shCount) shCount.value = String(searchHeads);
+      }
+      wasAutoCluster = nowAuto;
+    }
+    onFormChange();
+  });
 
   updateEpsPanel();
   updateTopologyPanel(n);
@@ -501,6 +597,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   recalculate();
 }
 
-export function renderPlanner(container: HTMLElement): void {
+export function renderPlanner(container: HTMLElement, onLocaleChange?: () => void): void {
   renderApp(container, loadInputs());
+  bindNavEvents(container, onLocaleChange);
 }

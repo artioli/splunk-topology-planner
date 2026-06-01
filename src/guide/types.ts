@@ -4,6 +4,8 @@ export type DeploymentProfileId =
   | 'distributed_ic'
   | 'distributed_ic_shc';
 
+export type LinuxDistro = 'rhel' | 'ubuntu' | 'debian';
+
 export type HostRoleKey =
   | 'combined'
   | 'mgmt'
@@ -37,25 +39,36 @@ export type StepTarget =
   | 'uf2';
 
 export interface DocLink {
-  label: string;
+  labelKey: string;
   url: string;
 }
 
 export interface GuideBlock {
-  type: 'text' | 'warning' | 'commands' | 'ubuntu';
-  content: string;
+  type: 'text' | 'warning' | 'commands';
+  contentKey: string;
   commands?: string[];
+  copyAsBlock?: boolean;
+  /** If set, block only renders for these distros. Omit = all distros. */
+  distros?: LinuxDistro[];
+}
+
+export interface StepValidation {
+  id: string;
+  labelKey: string;
+  command?: string;
+  expectKey?: string;
+  expectPattern?: string;
+  optional?: boolean;
 }
 
 export interface GuideStep {
   id: string;
-  phase: string;
-  title: string;
   profiles: DeploymentProfileId[];
   targets: StepTarget[];
   optional?: boolean;
   docLinks: DocLink[];
   blocks: GuideBlock[];
+  validations: StepValidation[];
 }
 
 export interface HostEntry {
@@ -78,9 +91,6 @@ export interface HostConfig {
 
 export interface DeploymentProfile {
   id: DeploymentProfileId;
-  label: string;
-  description: string;
-  svaHint: string;
   hostRoles: HostRoleKey[];
   splunkHostCount: number;
 }
@@ -91,4 +101,7 @@ export interface GuideState {
   hostConfig: HostConfig;
   completedSteps: string[];
   showCompletedSteps: boolean;
+  linuxDistro: LinuxDistro;
+  validatedChecks: Record<string, string[]>;
+  skipValidationSteps: string[];
 }

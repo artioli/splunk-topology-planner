@@ -1,0 +1,21 @@
+/** Splunk product names and technical terms kept in English across all locales. */
+export const DO_NOT_TRANSLATE = [
+  'Splunk',
+  'Splunk Enterprise',
+  'Universal Forwarder',
+  'Cluster Manager',
+  'Deployment Server',
+  'Monitoring Console',
+  'License Manager',
+  'SHC',
+  'HEC',
+  'indexer',
+  'search head',
+  'captain',
+  'deployer',
+  'SPLUNK_HOME',
+  'SPLUNK_DB',
+  'Splunk Web',
+  'Settings',
+  'btool',
+] as const;
