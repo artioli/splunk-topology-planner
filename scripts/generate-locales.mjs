@@ -391,7 +391,7 @@ add('planner.field.autoClusterEstimation', 'Automatic configuration', 'Configura
 add('planner.field.clusterAutoHint', 'Max volume per index: {maxVolumePerIndexGb} GB/day.', 'Volume máximo por index: {maxVolumePerIndexGb} GB/dia.', 'Volumen máximo por index: {maxVolumePerIndexGb} GB/día.');
 add('planner.field.suggestedIndexers', 'Suggested indexers: {indexers}', 'Indexers sugeridos: {indexers}', 'Indexers sugeridos: {indexers}');
 add('planner.field.suggestedSearchHeads', 'Suggested search heads: {searchHeads}', 'Search heads sugeridos: {searchHeads}', 'Search heads sugeridos: {searchHeads}');
-add('planner.field.maxVolumePerIndexGb', 'Max volume per index (GB/day)', 'Volume máximo por index (GB/dia)', 'Volumen máximo por index (GB/día)');
+add('planner.field.maxVolumePerIndexGb', 'Max volume per indexer (GB/day)', 'Volume máximo por indexer (GB/dia)', 'Volumen máximo por indexer (GB/día)');
 add('planner.field.manualIndexerCount', 'Number of indexers (max {max})', 'Número de indexers (máx. {max})', 'Número de indexers (máx. {max})');
 add('planner.field.searchHeadCount', 'Search heads (quantity)', 'Search heads (quantidade)', 'Search heads (cantidad)');
 add('planner.field.searchHeadCluster', 'Search head cluster (SHC, min {min} members)', 'Search head cluster (SHC, mín. {min} membros)', 'Search head cluster (SHC, mín. {min} miembros)');
@@ -411,6 +411,13 @@ add('planner.field.dedicateMonitoringConsole', 'Dedicated Monitoring Console (MC
 add('planner.field.environment', 'Hosting', 'Alojamento', 'Alojamiento');
 add('planner.field.environmentPhysical', 'Physical / bare metal', 'Físico / bare metal', 'Físico / bare metal');
 add('planner.field.environmentVirtual', 'Virtualized', 'Virtualizado', 'Virtualizado');
+add('planner.field.virtualizationOverheadPct', 'Virtualization overhead (%)', 'Sobrecarga de virtualização (%)', 'Sobrecarga de virtualización (%)');
+add('planner.field.virtualizationOverheadHint', 'Infrastructure compensation for the virtualized indexer. Usually 10 to 15 percent.', 'Compensação de infraestrutura para o indexer virtualizado. Normalmente 10 a 15 por cento.', 'Compensación de infraestructura para el indexer virtualizado. Normalmente 10 a 15 por ciento.');
+add('planner.field.clusterReplication', 'Cluster Replication', 'Replicação de cluster', 'Replicación de cluster');
+add('planner.field.esShc', 'Enterprise Security Search Head Cluster', 'Search Head Cluster do Enterprise Security', 'Search Head Cluster de Enterprise Security');
+add('planner.field.esShcMembers', 'ES SHC members (min 3)', 'Membros do SHC de ES (mín. 3)', 'Miembros del SHC de ES (mín. 3)');
+add('planner.field.itsiShc', 'ITSI Search Head Cluster', 'Search Head Cluster do ITSI', 'Search Head Cluster de ITSI');
+add('planner.field.itsiShcMembers', 'ITSI SHC members (min 3)', 'Membros do SHC de ITSI (mín. 3)', 'Miembros del SHC de ITSI (mín. 3)');
 add('planner.units.days', 'days', 'dias', 'días');
 add('planner.units.months', 'months', 'meses', 'meses');
 add('planner.units.years', 'years', 'anos', 'años');
@@ -464,8 +471,12 @@ add('planner.results.copySummaryShort', 'Copy summary', 'Copiar resumo', 'Copiar
 add('planner.results.shcSuffix', '(SHC)', '(SHC)', '(SHC)');
 add('planner.results.hardwareCompute', '{physicalCores}c / {vcpu} vCPU / {ramGb} GB RAM', '{physicalCores}c / {vcpu} vCPU / {ramGb} GB RAM', '{physicalCores}c / {vcpu} vCPU / {ramGb} GB RAM');
 add('planner.results.hardwareDisk', '{osDiskGb} GB OS · {splunkDiskGb}+ GB Splunk', '{osDiskGb} GB OS · {splunkDiskGb}+ GB Splunk', '{osDiskGb} GB OS · {splunkDiskGb}+ GB Splunk');
+add('planner.results.diskType.sh', 'SSD', 'SSD', 'SSD');
+add('planner.results.diskType.idx', 'SSD for Hot/Warm & HDD for Cold/Frozen', 'SSD para Hot/Warm e HDD para Cold/Frozen', 'SSD para Hot/Warm y HDD para Cold/Frozen');
+add('planner.results.diskType.mgmt', 'SSD or HDD', 'SSD ou HDD', 'SSD o HDD');
 add('planner.results.storageLine', '{label}: {tb} ({days}d)', '{label}: {tb} ({days}d)', '{label}: {tb} ({days}d)');
 add('planner.subtitleGuideLink', 'Linux deployment guide', 'Guia de implantação Linux', 'Guía de implementación Linux');
+add('planner.disclaimer', 'This planner provides guidance and estimates only — always validate against official Splunk reference architectures and your real workload before deploying.', 'Este planejador fornece apenas orientações e estimativas — valide sempre com as arquiteturas de referência oficiais da Splunk e a sua carga de trabalho real antes de implementar.', 'Este planificador ofrece solo orientación y estimaciones — valide siempre con las arquitecturas de referencia oficiales de Splunk y su carga de trabajo real antes de implementar.');
 
 add('planner.docs.sva', 'Splunk Validated Architectures', 'Splunk Validated Architectures', 'Splunk Validated Architectures');
 add('planner.docs.hardware104', 'Splunk Enterprise 10.4 — Reference hardware', 'Splunk Enterprise 10.4 — Reference hardware', 'Splunk Enterprise 10.4 — Reference hardware');

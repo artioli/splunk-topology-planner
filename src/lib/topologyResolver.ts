@@ -1,5 +1,10 @@
 import { resolveIndexerCount } from './clusterEstimation';
-import { clampIndexerCount, clampReplicationAndSearchFactors } from './clusterFactors';
+import {
+  clampIndexerCount,
+  clampReplicationAndSearchFactors,
+  defaultFactorsForIndexers,
+  isClusteredDeployment,
+} from './clusterFactors';
 import { SIZING } from './constants';
 import { msg } from './clusterFactors';
 import type { ClusterEstimation, PlannerInputs, ResiliencyFamily } from './types';
@@ -28,7 +33,7 @@ export function inferIndexingPrefix(
   if (singleServer) {
     return { prefix: 'S', label: 'S — Single server (S1)' };
   }
-  if (isClustered && indexerCount >= SIZING.MIN_CLUSTER_INDEXERS) {
+  if (isClustered) {
     return { prefix: 'C', label: 'C — Single-site indexer cluster (auto)' };
   }
   if (indexerCount >= 2) {
@@ -59,11 +64,13 @@ export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopology
   const singleServer = inputs.singleServerDeployment;
 
   const clusterEst = resolveIndexerCount(inputs, inputs.dailyIngestGb, false);
-  let indexerCount = singleServer ? 1 : clampIndexerCount(clusterEst.appliedIndexerCount);
-  const isClustered = !singleServer && indexerCount >= SIZING.MIN_CLUSTER_INDEXERS;
-  if (isClustered && indexerCount < SIZING.MIN_CLUSTER_INDEXERS) {
-    indexerCount = SIZING.MIN_CLUSTER_INDEXERS;
-  }
+  const indexerCount = singleServer ? 1 : clampIndexerCount(clusterEst.appliedIndexerCount);
+  const isClustered = isClusteredDeployment(
+    singleServer,
+    inputs.autoClusterEstimation,
+    inputs.clusterReplication,
+    indexerCount,
+  );
   const { prefix, label: prefixLabel } = inferIndexingPrefix(
     singleServer,
     indexerCount,
@@ -84,11 +91,14 @@ export function resolveTopologySettings(inputs: PlannerInputs): ResolvedTopology
   let searchFactor = inputs.searchFactor;
 
   if (!isClustered) {
-    if (replicationFactor !== 1 || searchFactor !== 1) {
-      topologyWarnings.push(msg('advisory.nonClusterRfSf'));
-    }
     replicationFactor = 1;
     searchFactor = 1;
+  } else if (inputs.autoClusterEstimation) {
+    // Auto mode derives RF/SF from the indexer count: 2 peers -> RF2/SF2,
+    // 3+ peers -> RF3/SF2 (see defaultFactorsForIndexers).
+    const auto = defaultFactorsForIndexers(indexerCount, true);
+    replicationFactor = auto.replicationFactor;
+    searchFactor = auto.searchFactor;
   } else {
     const clamped = clampReplicationAndSearchFactors(
       replicationFactor,

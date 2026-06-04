@@ -13,6 +13,7 @@ import {
 import { getPerformanceRecommendation } from './performanceRecommendations';
 import { resolveTopologySettings } from './topologyResolver';
 import type {
+  HardwareSpec,
   I18nMessage,
   PlannerInputs,
   ResiliencyFamily,
@@ -27,14 +28,38 @@ function buildSvaCode(prefix: ResiliencyFamily, suffix: number, es: boolean): st
   return `${prefix}${suffix + 10}`;
 }
 
+/** Scale indexer compute to compensate for virtualization overhead. */
+function applyVirtualizationOverhead(spec: HardwareSpec, pct: number): HardwareSpec {
+  if (pct <= 0) return spec;
+  const factor = 1 + pct / 100;
+  const scale = (v: number | undefined): number | undefined =>
+    v == null ? undefined : Math.ceil(v * factor);
+  return {
+    ...spec,
+    physicalCores: Math.ceil(spec.physicalCores * factor),
+    physicalCoresRecommended: scale(spec.physicalCoresRecommended),
+    vcpu: Math.ceil(spec.vcpu * factor),
+    vcpuRecommended: scale(spec.vcpuRecommended),
+    ramGb: Math.ceil(spec.ramGb * factor),
+    ramGbRecommended: scale(spec.ramGbRecommended),
+    sources: [...new Set([...spec.sources, 'VIRT' as const])],
+  };
+}
+
 function esSearchHeadCount(inputs: PlannerInputs, settings: ReturnType<typeof resolveTopologySettings>): number {
   if (!inputs.enterpriseSecurity) return 0;
+  if (!inputs.autoClusterEstimation && !settings.singleServer) {
+    return inputs.esShc ? Math.max(SIZING.MIN_SHC_MEMBERS, inputs.esShcMembers) : 1;
+  }
   if (settings.hasShc || settings.isClustered) return SIZING.MIN_SHC_MEMBERS;
   return 1;
 }
 
 function itsiSearchHeadCount(inputs: PlannerInputs, settings: ReturnType<typeof resolveTopologySettings>): number {
   if (!inputs.itsi) return 0;
+  if (!inputs.autoClusterEstimation && !settings.singleServer) {
+    return inputs.itsiShc ? Math.max(SIZING.MIN_SHC_MEMBERS, inputs.itsiShcMembers) : 1;
+  }
   if (settings.hasShc) return Math.max(SIZING.MIN_SHC_MEMBERS, settings.operationalSearchHeadCount);
   return 1;
 }
@@ -45,13 +70,18 @@ function addRow(
   label: string,
   count: number,
   hwOptions: HardwareOptions,
+  virtOverheadPct = 0,
 ): void {
   if (count <= 0) return;
+  let hardware = resolveHardwareSpec(role, hwOptions);
+  if (virtOverheadPct > 0 && (role === 'indexer' || role === 'combined')) {
+    hardware = applyVirtualizationOverhead(hardware, virtOverheadPct);
+  }
   inventory.push({
     role,
     roleLabel: label,
     count,
-    hardware: resolveHardwareSpec(role, hwOptions),
+    hardware,
     osDiskGb: getOsDiskGb(role),
     splunkDiskGb: getSplunkDiskGb(role),
   });
@@ -142,12 +172,17 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
     highIngest: inputs.dailyIngestGb >= 500,
   };
 
+  const virtPct =
+    inputs.environment === 'virtual'
+      ? Math.max(0, Math.min(100, Math.round(inputs.virtualizationOverheadPct ?? 0)))
+      : 0;
+
   const inventory: ServerInventoryRow[] = [];
   const esShCount = esSearchHeadCount(inputs, settings);
   const itsiShCount = itsiSearchHeadCount(inputs, settings);
 
   if (singleServer) {
-    addRow(inventory, 'combined', 'Combined indexer + search (S1)', 1, hwOptions);
+    addRow(inventory, 'combined', 'Combined indexer + search (S1)', 1, hwOptions, virtPct);
     if (inputs.enterpriseSecurity) {
       addRow(inventory, 'search-head-es', 'Dedicated Enterprise Security SH', 1, hwOptions);
     }
@@ -181,7 +216,7 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
       );
     }
 
-    addRow(inventory, 'indexer', isClustered ? 'Clustered indexer peer' : 'Indexer', indexerCount, hwOptions);
+    addRow(inventory, 'indexer', isClustered ? 'Clustered indexer peer' : 'Indexer', indexerCount, hwOptions, virtPct);
 
     const managementPlan = buildManagementPlan(inputs, {
       isClustered,

@@ -28,9 +28,15 @@ export interface PlannerInputs {
   autoClusterEstimation: boolean;
   maxVolumePerIndexGb: number;
   manualIndexerCount: number;
+  clusterReplication: boolean;
   replicationFactor: number;
   searchFactor: number;
+  esShc: boolean;
+  esShcMembers: number;
+  itsiShc: boolean;
+  itsiShcMembers: number;
   environment: EnvironmentType;
+  virtualizationOverheadPct: number;
   forwarderClientCount: number;
   managementManualConfig: boolean;
   dedicateDeploymentServer: boolean;
@@ -49,7 +55,7 @@ export interface HardwareSpec {
   ramGbRecommended?: number;
   storageNotes: string[];
   tierLabel: string;
-  sources: ('10.4' | 'ES' | 'ITSI')[];
+  sources: ('10.4' | 'ES' | 'ITSI' | 'VIRT')[];
 }
 
 export type ServerRole =

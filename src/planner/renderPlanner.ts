@@ -1,5 +1,5 @@
 import { t } from '../i18n';
-import { MAX_INDEXERS, MAX_RF_SF } from '../lib/clusterFactors';
+import { MAX_INDEXERS, MAX_RF_SF, defaultFactorsForIndexers } from '../lib/clusterFactors';
 import { getDefaultMaxVolumeGb } from '../lib/clusterEstimation';
 import { SIZING } from '../lib/constants';
 import { escapeHtml } from '../lib/format';
@@ -63,34 +63,27 @@ function getAutoSuggestions(inputs: PlannerInputs): { indexers: number; searchHe
 
 function updateRfSfMax(indexerCount: number): void {
   const rfMax = Math.max(1, indexerCount);
-  const rfAuto = document.getElementById('replicationFactorAuto') as HTMLInputElement | null;
   const rfManual = document.getElementById('replicationFactor') as HTMLInputElement | null;
-  const sfAuto = document.getElementById('searchFactorAuto') as HTMLInputElement | null;
   const sfManual = document.getElementById('searchFactor') as HTMLInputElement | null;
 
-  for (const el of [rfAuto, rfManual]) {
-    if (el) {
-      el.max = String(rfMax);
-      if (Number(el.value) > rfMax) el.value = String(rfMax);
-    }
+  if (rfManual) {
+    rfManual.max = String(rfMax);
+    if (Number(rfManual.value) > rfMax) rfManual.value = String(rfMax);
   }
 
-  const rf = Number(rfAuto?.classList.contains('is-hidden') ? rfManual?.value : rfAuto?.value) || rfMax;
+  const rf = Number(rfManual?.value) || rfMax;
   const sfMax = Math.max(1, Math.min(rf, rfMax));
 
-  for (const el of [sfAuto, sfManual]) {
-    if (el) {
-      el.max = String(sfMax);
-      if (Number(el.value) > sfMax) el.value = String(sfMax);
-    }
+  if (sfManual) {
+    sfManual.max = String(sfMax);
+    if (Number(sfManual.value) > sfMax) sfManual.value = String(sfMax);
   }
 }
 
 function readClusterFactors(): { replicationFactor: number; searchFactor: number } {
-  const auto = checked('autoClusterEstimation');
   return {
-    replicationFactor: num(auto ? 'replicationFactorAuto' : 'replicationFactor'),
-    searchFactor: num(auto ? 'searchFactorAuto' : 'searchFactor'),
+    replicationFactor: num('replicationFactor'),
+    searchFactor: num('searchFactor'),
   };
 }
 
@@ -122,9 +115,15 @@ function readInputs(): PlannerInputs {
     autoClusterEstimation: checked('autoClusterEstimation'),
     maxVolumePerIndexGb: num('maxVolumePerIndexGb'),
     manualIndexerCount: num('manualIndexerCount'),
+    clusterReplication: checked('clusterReplication'),
     replicationFactor,
     searchFactor,
+    esShc: checked('esShc'),
+    esShcMembers: num('esShcMembers'),
+    itsiShc: checked('itsiShc'),
+    itsiShcMembers: num('itsiShcMembers'),
     environment: val('environment') as PlannerInputs['environment'],
+    virtualizationOverheadPct: num('virtualizationOverheadPct'),
     forwarderClientCount: num('forwarderClientCount'),
     managementManualConfig: checked('managementManualConfig'),
     dedicateDeploymentServer: checked('dedicateDeploymentServer'),
@@ -152,16 +151,17 @@ function updateEpsPanel(): void {
 
 function updateClusterRfSfVisibility(indexerCount?: number): void {
   const single = checked('singleServerDeployment');
+  const auto = checked('autoClusterEstimation');
   const count =
     indexerCount ??
     resolveTopologySettings(normalizePlannerInputs(readInputs())).indexerCount;
-  const showRfSf = !single && count > 1;
+  // Item 6: the Cluster Replication toggle only appears in manual mode with > 1 indexer.
+  const showReplicationToggle = !single && !auto && count > 1;
+  setVisible('cluster-replication-row', showReplicationToggle);
+  // Item 7: auto mode hides RF/SF entirely; manual mode shows them only when
+  // Cluster Replication is enabled.
+  const showRfSf = showReplicationToggle && checked('clusterReplication');
   setVisible('cluster-rf-sf', showRfSf);
-  const auto = checked('autoClusterEstimation');
-  document.getElementById('replicationFactor')?.classList.toggle('is-hidden', auto);
-  document.getElementById('replicationFactorAuto')?.classList.toggle('is-hidden', !auto);
-  document.getElementById('searchFactor')?.classList.toggle('is-hidden', auto);
-  document.getElementById('searchFactorAuto')?.classList.toggle('is-hidden', !auto);
 }
 
 function updateSearchHeadAuto(inputs?: PlannerInputs): void {
@@ -169,6 +169,9 @@ function updateSearchHeadAuto(inputs?: PlannerInputs): void {
   const auto = checked('autoClusterEstimation');
   const countEl = document.getElementById('searchHeadCount') as HTMLInputElement | null;
   const hint = document.getElementById('search-head-auto-hint');
+  // Item 4: hide the search head quantity field entirely in auto mode (value is
+  // still computed behind the scenes for the engine).
+  setVisible('search-head-count-field', !single && !auto);
   if (!countEl || single) return;
 
   if (auto) {
@@ -190,6 +193,23 @@ function updateSearchHeadAuto(inputs?: PlannerInputs): void {
     countEl.disabled = false;
     if (hint) hint.textContent = '';
   }
+}
+
+function updateEnvironmentPanel(): void {
+  setVisible('virtualization-overhead-field', val('environment') === 'virtual');
+}
+
+function updatePremiumPanel(): void {
+  // Item 8: per-app SHC controls only apply to a distributed/manual deployment.
+  const single = checked('singleServerDeployment');
+  const auto = checked('autoClusterEstimation');
+  const manualDistributed = !single && !auto;
+  const es = checked('enterpriseSecurity');
+  const itsi = checked('itsi');
+  setVisible('es-shc-controls', manualDistributed && es);
+  setVisible('es-shc-members-field', manualDistributed && es && checked('esShc'));
+  setVisible('itsi-shc-controls', manualDistributed && itsi);
+  setVisible('itsi-shc-members-field', manualDistributed && itsi && checked('itsiShc'));
 }
 
 function updateSearchHeadMin(): void {
@@ -214,6 +234,7 @@ function updateTopologyPanel(partial?: PlannerInputs): void {
   updateSearchHeadAuto(inputs);
   updateSearchHeadMin();
   updateRfSfMax(resolved.indexerCount);
+  updatePremiumPanel();
 
   const hint = document.getElementById('inferred-prefix-hint');
   const summary = document.getElementById('cluster-auto-summary');
@@ -281,7 +302,21 @@ function recalculate(): void {
   updateManagementPanel();
 
   const resultsContainer = document.getElementById('results-container');
-  if (resultsContainer) resultsContainer.innerHTML = renderResults(result);
+  if (resultsContainer) {
+    // Item 0: preserve the reader's scroll position and which result sections
+    // are expanded across the full re-render.
+    const resultsColumn = document.getElementById('results-column');
+    const prevScroll = resultsColumn?.scrollTop ?? 0;
+    const prevOpen = Array.from(resultsContainer.querySelectorAll('details')).map(
+      (d) => (d as HTMLDetailsElement).open,
+    );
+    resultsContainer.innerHTML = renderResults(result);
+    const nextDetails = resultsContainer.querySelectorAll('details');
+    nextDetails.forEach((d, i) => {
+      if (i < prevOpen.length) (d as HTMLDetailsElement).open = prevOpen[i];
+    });
+    if (resultsColumn) resultsColumn.scrollTop = prevScroll;
+  }
 
   const prefixResult = document.getElementById('inferred-prefix-result');
   if (prefixResult) {
@@ -443,12 +478,12 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
               <label for="singleServerDeployment">${escapeHtml(t('planner.field.singleServerDeployment'))}</label>
             </div>
             <div id="topology-distributed-fields" class="${n.singleServerDeployment ? 'is-hidden' : ''}">
-              <p class="field-hint" id="inferred-prefix-hint"></p>
-              <p class="field-hint"><strong id="inferred-prefix-result">—</strong></p>
               <div class="checkbox-row">
                 <input type="checkbox" id="autoClusterEstimation" ${n.autoClusterEstimation ? 'checked' : ''} />
                 <label for="autoClusterEstimation">${escapeHtml(t('planner.field.autoClusterEstimation'))}</label>
               </div>
+              <p class="field-hint" id="inferred-prefix-hint"></p>
+              <p class="field-hint"><strong id="inferred-prefix-result">—</strong></p>
               <p class="field-hint" id="cluster-auto-hint"></p>
               <div id="cluster-auto-summary"></div>
               <div id="cluster-manual-fields" class="${n.autoClusterEstimation ? 'is-hidden' : ''}">
@@ -463,29 +498,51 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
                   </div>
                 </div>
               </div>
-              <div class="grid-2">
+              <div class="checkbox-row is-hidden" id="cluster-replication-row">
+                <input type="checkbox" id="clusterReplication" ${n.clusterReplication ? 'checked' : ''} />
+                <label for="clusterReplication">${escapeHtml(t('planner.field.clusterReplication'))}</label>
+              </div>
+              <div id="cluster-rf-sf" class="grid-2 cluster-rf-sf">
                 <div class="field">
+                  <label for="replicationFactor">${escapeHtml(t('planner.field.replicationFactor'))}</label>
+                  <input type="number" id="replicationFactor" min="1" max="${MAX_RF_SF}" value="${n.replicationFactor}" />
+                  <p class="field-hint">${escapeHtml(t('planner.field.rfHint'))}</p>
+                </div>
+                <div class="field">
+                  <label for="searchFactor">${escapeHtml(t('planner.field.searchFactor'))}</label>
+                  <input type="number" id="searchFactor" min="1" max="${MAX_RF_SF}" value="${n.searchFactor}" />
+                  <p class="field-hint">${escapeHtml(t('planner.field.sfHint'))}</p>
+                </div>
+              </div>
+              <div class="premium-shc-controls">
+                <div class="checkbox-row">
+                  <input type="checkbox" id="searchHeadCluster" ${n.searchHeadCluster ? 'checked' : ''} />
+                  <label for="searchHeadCluster">${escapeHtml(t('planner.field.searchHeadCluster', { min: SIZING.MIN_SHC_MEMBERS }))}</label>
+                </div>
+                <div class="field" id="search-head-count-field">
                   <label for="searchHeadCount">${escapeHtml(t('planner.field.searchHeadCount'))}</label>
                   <input type="number" id="searchHeadCount" min="1" max="${MAX_INDEXERS}" value="${n.searchHeadCount}" />
                   <p class="field-hint" id="search-head-auto-hint"></p>
                 </div>
-                <div class="checkbox-row" style="align-self:end">
-                  <input type="checkbox" id="searchHeadCluster" ${n.searchHeadCluster ? 'checked' : ''} />
-                  <label for="searchHeadCluster">${escapeHtml(t('planner.field.searchHeadCluster', { min: SIZING.MIN_SHC_MEMBERS }))}</label>
+              </div>
+              <div id="es-shc-controls" class="is-hidden premium-shc-controls">
+                <div class="checkbox-row">
+                  <input type="checkbox" id="esShc" ${n.esShc ? 'checked' : ''} />
+                  <label for="esShc">${escapeHtml(t('planner.field.esShc'))}</label>
+                </div>
+                <div class="field" id="es-shc-members-field">
+                  <label for="esShcMembers">${escapeHtml(t('planner.field.esShcMembers'))}</label>
+                  <input type="number" id="esShcMembers" min="${SIZING.MIN_SHC_MEMBERS}" max="${MAX_INDEXERS}" value="${n.esShcMembers}" />
                 </div>
               </div>
-              <div id="cluster-rf-sf" class="grid-2 cluster-rf-sf">
-                <div class="field">
-                  <label>${escapeHtml(t('planner.field.replicationFactor'))}</label>
-                  <input type="number" id="replicationFactorAuto" min="1" max="${MAX_RF_SF}" value="${n.replicationFactor}" class="${n.autoClusterEstimation ? '' : 'is-hidden'}" />
-                  <input type="number" id="replicationFactor" min="1" max="${MAX_RF_SF}" value="${n.replicationFactor}" class="${n.autoClusterEstimation ? 'is-hidden' : ''}" />
-                  <p class="field-hint">${escapeHtml(t('planner.field.rfHint'))}</p>
+              <div id="itsi-shc-controls" class="is-hidden premium-shc-controls">
+                <div class="checkbox-row">
+                  <input type="checkbox" id="itsiShc" ${n.itsiShc ? 'checked' : ''} />
+                  <label for="itsiShc">${escapeHtml(t('planner.field.itsiShc'))}</label>
                 </div>
-                <div class="field">
-                  <label>${escapeHtml(t('planner.field.searchFactor'))}</label>
-                  <input type="number" id="searchFactorAuto" min="1" max="${MAX_RF_SF}" value="${n.searchFactor}" class="${n.autoClusterEstimation ? '' : 'is-hidden'}" />
-                  <input type="number" id="searchFactor" min="1" max="${MAX_RF_SF}" value="${n.searchFactor}" class="${n.autoClusterEstimation ? 'is-hidden' : ''}" />
-                  <p class="field-hint">${escapeHtml(t('planner.field.sfHint'))}</p>
+                <div class="field" id="itsi-shc-members-field">
+                  <label for="itsiShcMembers">${escapeHtml(t('planner.field.itsiShcMembers'))}</label>
+                  <input type="number" id="itsiShcMembers" min="${SIZING.MIN_SHC_MEMBERS}" max="${MAX_INDEXERS}" value="${n.itsiShcMembers}" />
                 </div>
               </div>
             </div>
@@ -541,6 +598,11 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
                 <option value="virtual" ${n.environment === 'virtual' ? 'selected' : ''}>${escapeHtml(t('planner.field.environmentVirtual'))}</option>
               </select>
             </div>
+            <div class="field ${n.environment === 'virtual' ? '' : 'is-hidden'}" id="virtualization-overhead-field">
+              <label for="virtualizationOverheadPct">${escapeHtml(t('planner.field.virtualizationOverheadPct'))}</label>
+              <input type="number" id="virtualizationOverheadPct" min="0" max="100" step="1" value="${n.virtualizationOverheadPct}" />
+              <p class="field-hint">${escapeHtml(t('planner.field.virtualizationOverheadHint'))}</p>
+            </div>
           </div>
         </section>
       </form>
@@ -550,6 +612,10 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
         <div id="results-container"></div>
       </div>
     </main>
+
+    <footer class="app-footer">
+      <p class="field-hint">${escapeHtml(t('planner.disclaimer'))}</p>
+    </footer>
 
     <button type="button" id="jump-results" class="btn jump-results is-hidden">${escapeHtml(t('planner.results.jumpToResults'))}</button>
     <div class="mobile-copy-bar">
@@ -566,6 +632,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
 
   const onFormChange = (): void => {
     updateEpsPanel();
+    updateEnvironmentPanel();
     updateTopologyPanel();
     const es = checked('enterpriseSecurity');
     const itsi = checked('itsi');
@@ -588,10 +655,21 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
       }
       wasAutoCluster = nowAuto;
     }
+    // Item 6: seed sensible RF/SF defaults the first time Cluster Replication
+    // is enabled in manual mode.
+    if (target.id === 'clusterReplication' && checked('clusterReplication')) {
+      const count = resolveTopologySettings(normalizePlannerInputs(readInputs())).indexerCount;
+      const def = defaultFactorsForIndexers(count, true);
+      const rf = document.getElementById('replicationFactor') as HTMLInputElement | null;
+      const sf = document.getElementById('searchFactor') as HTMLInputElement | null;
+      if (rf) rf.value = String(def.replicationFactor);
+      if (sf) sf.value = String(def.searchFactor);
+    }
     onFormChange();
   });
 
   updateEpsPanel();
+  updateEnvironmentPanel();
   updateTopologyPanel(n);
   updateManagementPanel();
   recalculate();

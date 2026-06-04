@@ -2,7 +2,13 @@ import { resolveMessage, t } from '../i18n';
 import { DOC_LINKS } from '../lib/constants';
 import { escapeHtml, formatTb } from '../lib/format';
 import { profileFromResult } from '../lib/plannerHandoff';
-import type { PlannerResult } from '../lib/types';
+import type { PlannerResult, ServerRole } from '../lib/types';
+
+function diskTypeFor(role: ServerRole): string {
+  if (role.startsWith('search-head')) return t('planner.results.diskType.sh');
+  if (role === 'indexer' || role === 'combined') return t('planner.results.diskType.idx');
+  return t('planner.results.diskType.mgmt');
+}
 
 function badges(sources: string[]): string {
   return sources
@@ -49,10 +55,10 @@ export function renderResults(result: PlannerResult): string {
         }),
       )}</td>
       <td>${escapeHtml(
-        t('planner.results.hardwareDisk', {
+        `${t('planner.results.hardwareDisk', {
           osDiskGb: row.osDiskGb,
           splunkDiskGb: row.splunkDiskGb,
-        }),
+        })} · ${diskTypeFor(row.role)}`,
       )}</td>
       <td><div class="source-badges">${badges(row.hardware.sources)}</div></td>
     </tr>`,

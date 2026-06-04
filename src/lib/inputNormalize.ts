@@ -1,9 +1,19 @@
-import { clampIndexerCount, clampReplicationAndSearchFactors } from './clusterFactors';
+import {
+  clampIndexerCount,
+  clampReplicationAndSearchFactors,
+  defaultFactorsForIndexers,
+  isClusteredDeployment,
+} from './clusterFactors';
 import { getDefaultMaxVolumeGb } from './clusterEstimation';
 import type { PlannerInputs } from './types';
 
 export function normalizePlannerInputs(raw: PlannerInputs): PlannerInputs {
   const inputs = { ...raw };
+
+  inputs.virtualizationOverheadPct = Math.max(
+    0,
+    Math.min(100, Math.round(inputs.virtualizationOverheadPct ?? 0)),
+  );
 
   if (inputs.singleServerDeployment) {
     inputs.searchHeadCount = 1;
@@ -26,9 +36,21 @@ export function normalizePlannerInputs(raw: PlannerInputs): PlannerInputs {
     : inputs.manualIndexerCount;
 
   const peers = clampIndexerCount(peerEstimate);
-  const isClustered = peers >= 3;
+  const isClustered = isClusteredDeployment(
+    false,
+    inputs.autoClusterEstimation,
+    inputs.clusterReplication,
+    peers,
+  );
 
-  if (isClustered) {
+  if (!isClustered) {
+    inputs.replicationFactor = 1;
+    inputs.searchFactor = 1;
+  } else if (inputs.autoClusterEstimation) {
+    const auto = defaultFactorsForIndexers(peers, true);
+    inputs.replicationFactor = auto.replicationFactor;
+    inputs.searchFactor = auto.searchFactor;
+  } else {
     const clamped = clampReplicationAndSearchFactors(
       inputs.replicationFactor,
       inputs.searchFactor,
@@ -36,9 +58,6 @@ export function normalizePlannerInputs(raw: PlannerInputs): PlannerInputs {
     );
     inputs.replicationFactor = clamped.replicationFactor;
     inputs.searchFactor = clamped.searchFactor;
-  } else {
-    inputs.replicationFactor = 1;
-    inputs.searchFactor = 1;
   }
 
   if (inputs.searchHeadCluster) {

@@ -47,6 +47,22 @@ export function clampReplicationAndSearchFactors(
   return { replicationFactor: rf, searchFactor: sf, warnings };
 }
 
+/**
+ * Centralized clustering decision shared by input normalization and the
+ * topology resolver. Auto mode clusters at >= 2 indexers; manual mode only
+ * clusters when the user opts in via the Cluster Replication toggle.
+ */
+export function isClusteredDeployment(
+  singleServer: boolean,
+  autoClusterEstimation: boolean,
+  clusterReplication: boolean,
+  indexerCount: number,
+): boolean {
+  if (singleServer) return false;
+  if (indexerCount < 2) return false;
+  return autoClusterEstimation || clusterReplication;
+}
+
 export function defaultFactorsForIndexers(indexerCount: number, isClustered: boolean): {
   replicationFactor: number;
   searchFactor: number;
