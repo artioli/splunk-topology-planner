@@ -24,4 +24,22 @@ describe('hardwareCatalog', () => {
     expect(spec.sources).toContain('ES');
     expect(spec.sources).toContain('ITSI');
   });
+
+  it('explicit indexer tier overrides auto ingest selection', () => {
+    const autoMid = resolveHardwareSpec('indexer', {
+      enterpriseSecurity: false,
+      itsi: false,
+      highIngest: true,
+    });
+    expect(autoMid.physicalCores).toBe(24);
+
+    const forcedMin = resolveHardwareSpec('indexer', {
+      enterpriseSecurity: false,
+      itsi: false,
+      highIngest: true,
+      indexerTier: 'min',
+    });
+    expect(forcedMin.physicalCores).toBe(12);
+    expect(forcedMin.tierLabel).toContain('minimum');
+  });
 });

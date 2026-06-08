@@ -8,6 +8,35 @@ export interface RetentionPeriod {
   unit: TimeUnit;
 }
 
+export type IndexerHardwareTier = 'min' | 'mid' | 'high' | 'custom';
+
+export interface HardwareOverrideValues {
+  physicalCores: number;
+  vcpu: number;
+  ramGb: number;
+  osDiskGb: number;
+  splunkDiskGb: number;
+}
+
+export interface RoleHardwareOverride {
+  enabled: boolean;
+  values: HardwareOverrideValues;
+}
+
+export const HARDWARE_OVERRIDE_ROLES = [
+  'search-head',
+  'search-head-es',
+  'search-head-itsi',
+  'cluster-manager',
+  'deployment-server',
+  'shc-deployer',
+  'license-manager',
+  'monitoring-console',
+  'management-stack',
+] as const;
+
+export type HardwareOverrideRole = (typeof HARDWARE_OVERRIDE_ROLES)[number];
+
 export interface PlannerInputs {
   dailyIngestGb: number;
   useEpsInput: boolean;
@@ -44,6 +73,10 @@ export interface PlannerInputs {
   colocateShcDeployer: boolean;
   dedicateLicenseManager: boolean;
   dedicateMonitoringConsole: boolean;
+  manualHardwareSpec: boolean;
+  indexerHardwareTier: IndexerHardwareTier;
+  indexerCustomSpec: HardwareOverrideValues;
+  roleHardwareOverrides: Partial<Record<HardwareOverrideRole, RoleHardwareOverride>>;
 }
 
 export interface HardwareSpec {
@@ -55,7 +88,7 @@ export interface HardwareSpec {
   ramGbRecommended?: number;
   storageNotes: string[];
   tierLabel: string;
-  sources: ('10.4' | 'ES' | 'ITSI' | 'VIRT')[];
+  sources: ('10.4' | 'ES' | 'ITSI' | 'VIRT' | 'CUSTOM')[];
 }
 
 export type ServerRole =

@@ -4,12 +4,27 @@ import { getDefaultMaxVolumeGb } from '../lib/clusterEstimation';
 import { SIZING } from '../lib/constants';
 import { escapeHtml } from '../lib/format';
 import { epsToGbPerDay } from '../lib/ingestCalculator';
+import { defaultHardwareOverrideValues, inferAutoIndexerTier } from '../lib/hardwareDefaults';
 import { normalizePlannerInputs } from '../lib/inputNormalize';
+import {
+  buildManagementPlan,
+  managementHostsToInventoryLabels,
+} from '../lib/managementPlanner';
 import { getPerformanceRecommendation } from '../lib/performanceRecommendations';
 import { savePlannerHandoff } from '../lib/plannerHandoff';
 import { runPlanner } from '../lib/planner';
 import { resolveTopologySettings } from '../lib/topologyResolver';
-import type { PlannerInputs, PlannerResult, RetentionPeriod, TimeUnit } from '../lib/types';
+import type {
+  HardwareOverrideRole,
+  HardwareOverrideValues,
+  IndexerHardwareTier,
+  PlannerInputs,
+  PlannerResult,
+  RetentionPeriod,
+  RoleHardwareOverride,
+  TimeUnit,
+} from '../lib/types';
+import { HARDWARE_OVERRIDE_ROLES } from '../lib/types';
 import { bindNavEvents, renderNav } from '../nav';
 import { loadInputs, readRetentionField, saveInputs } from '../storage';
 import { buildMarkdownSummary, renderResults } from '../ui/renderResults';
@@ -34,6 +49,105 @@ function unitOptions(selected: TimeUnit): string {
         `<option value="${u}" ${selected === u ? 'selected' : ''}>${escapeHtml(t(`planner.units.${u}`))}</option>`,
     )
     .join('');
+}
+
+const HW_ROLE_LABEL_KEYS: Record<HardwareOverrideRole, string> = {
+  'search-head': 'planner.hwRole.searchHead',
+  'search-head-es': 'planner.hwRole.searchHeadEs',
+  'search-head-itsi': 'planner.hwRole.searchHeadItsi',
+  'cluster-manager': 'planner.hwRole.clusterManager',
+  'deployment-server': 'planner.hwRole.deploymentServer',
+  'shc-deployer': 'planner.hwRole.shcDeployer',
+  'license-manager': 'planner.hwRole.licenseManager',
+  'monitoring-console': 'planner.hwRole.monitoringConsole',
+  'management-stack': 'planner.hwRole.managementStack',
+};
+
+function renderHardwareValueFields(
+  prefix: string,
+  values: HardwareOverrideValues,
+  hidden = false,
+): string {
+  return `
+    <div id="${prefix}-fields" class="premium-shc-controls ${hidden ? 'is-hidden' : ''}">
+      <div class="field">
+        <label for="${prefix}-physicalCores">${escapeHtml(t('planner.field.hwPhysicalCores'))}</label>
+        <input type="number" id="${prefix}-physicalCores" min="1" step="1" value="${values.physicalCores}" />
+      </div>
+      <div class="field">
+        <label for="${prefix}-vcpu">${escapeHtml(t('planner.field.hwVcpu'))}</label>
+        <input type="number" id="${prefix}-vcpu" min="1" step="1" value="${values.vcpu}" />
+      </div>
+      <div class="field">
+        <label for="${prefix}-ramGb">${escapeHtml(t('planner.field.hwRamGb'))}</label>
+        <input type="number" id="${prefix}-ramGb" min="4" step="1" value="${values.ramGb}" />
+      </div>
+      <div class="field">
+        <label for="${prefix}-osDiskGb">${escapeHtml(t('planner.field.hwOsDiskGb'))}</label>
+        <input type="number" id="${prefix}-osDiskGb" min="50" step="1" value="${values.osDiskGb}" />
+      </div>
+      <div class="field">
+        <label for="${prefix}-splunkDiskGb">${escapeHtml(t('planner.field.hwSplunkDiskGb'))}</label>
+        <input type="number" id="${prefix}-splunkDiskGb" min="50" step="1" value="${values.splunkDiskGb}" />
+      </div>
+    </div>`;
+}
+
+function renderRoleHardwareOverride(
+  role: HardwareOverrideRole,
+  override: RoleHardwareOverride,
+): string {
+  const prefix = `hw-${role}`;
+  return `
+    <div id="hw-role-${role}" class="is-hidden">
+      <div class="checkbox-row">
+        <input type="checkbox" id="${prefix}-enabled" ${override.enabled ? 'checked' : ''} />
+        <label for="${prefix}-enabled">${escapeHtml(t(HW_ROLE_LABEL_KEYS[role]))}</label>
+      </div>
+      ${renderHardwareValueFields(prefix, override.values, !override.enabled)}
+    </div>`;
+}
+
+function readHardwareOverrideValues(prefix: string): HardwareOverrideValues {
+  return {
+    physicalCores: num(`${prefix}-physicalCores`),
+    vcpu: num(`${prefix}-vcpu`),
+    ramGb: num(`${prefix}-ramGb`),
+    osDiskGb: num(`${prefix}-osDiskGb`),
+    splunkDiskGb: num(`${prefix}-splunkDiskGb`),
+  };
+}
+
+function readRoleHardwareOverrides(): PlannerInputs['roleHardwareOverrides'] {
+  const overrides: PlannerInputs['roleHardwareOverrides'] = {};
+  for (const role of HARDWARE_OVERRIDE_ROLES) {
+    const prefix = `hw-${role}`;
+    overrides[role] = {
+      enabled: checked(`${prefix}-enabled`),
+      values: readHardwareOverrideValues(prefix),
+    };
+  }
+  return overrides;
+}
+
+function getVisibleHardwareOverrideRoles(inputs: PlannerInputs): Set<HardwareOverrideRole> {
+  const settings = resolveTopologySettings(normalizePlannerInputs(inputs));
+  const visible = new Set<HardwareOverrideRole>();
+  if (!settings.singleServer) {
+    visible.add('search-head');
+    const plan = buildManagementPlan(inputs, {
+      isClustered: settings.isClustered,
+      hasShc: settings.hasShc,
+      isSingleServer: false,
+      indexerCount: settings.indexerCount,
+    });
+    for (const row of managementHostsToInventoryLabels(plan)) {
+      visible.add(row.role);
+    }
+  }
+  if (inputs.enterpriseSecurity) visible.add('search-head-es');
+  if (inputs.itsi) visible.add('search-head-itsi');
+  return visible;
 }
 
 function retentionField(prefix: string, label: string, period: RetentionPeriod): string {
@@ -131,6 +245,10 @@ function readInputs(): PlannerInputs {
     colocateShcDeployer: checked('colocateShcDeployer'),
     dedicateLicenseManager: checked('dedicateLicenseManager'),
     dedicateMonitoringConsole: checked('dedicateMonitoringConsole'),
+    manualHardwareSpec: checked('manualHardwareSpec'),
+    indexerHardwareTier: val('indexerHardwareTier') as IndexerHardwareTier,
+    indexerCustomSpec: readHardwareOverrideValues('indexerCustom'),
+    roleHardwareOverrides: readRoleHardwareOverrides(),
   };
 }
 
@@ -197,6 +315,33 @@ function updateSearchHeadAuto(inputs?: PlannerInputs): void {
 
 function updateEnvironmentPanel(): void {
   setVisible('virtualization-overhead-field', val('environment') === 'virtual');
+  updateManualHardwarePanel();
+}
+
+function updateManualHardwarePanel(): void {
+  const manual = checked('manualHardwareSpec');
+  setVisible('manual-hardware-controls', manual);
+  if (!manual) return;
+
+  const tier = val('indexerHardwareTier');
+  setVisible('indexerCustom-fields', tier === 'custom');
+
+  const inputs = normalizePlannerInputs(readInputs());
+  const settings = resolveTopologySettings(inputs);
+  const tierLabel = document.getElementById('indexer-tier-label');
+  if (tierLabel) {
+    tierLabel.textContent = settings.singleServer
+      ? t('planner.field.indexerHardwareTierCombined')
+      : t('planner.field.indexerHardwareTier');
+  }
+
+  const visibleRoles = getVisibleHardwareOverrideRoles(inputs);
+  for (const role of HARDWARE_OVERRIDE_ROLES) {
+    setVisible(`hw-role-${role}`, visibleRoles.has(role));
+    if (visibleRoles.has(role)) {
+      setVisible(`hw-${role}-fields`, checked(`hw-${role}-enabled`));
+    }
+  }
 }
 
 function updatePremiumPanel(): void {
@@ -235,6 +380,7 @@ function updateTopologyPanel(partial?: PlannerInputs): void {
   updateSearchHeadMin();
   updateRfSfMax(resolved.indexerCount);
   updatePremiumPanel();
+  updateManualHardwarePanel();
 
   const hint = document.getElementById('inferred-prefix-hint');
   const summary = document.getElementById('cluster-auto-summary');
@@ -272,6 +418,7 @@ function updateManagementPanel(): void {
   const resolved = resolveTopologySettings(normalizePlannerInputs(readInputs()));
   setVisible('mgmt-colocate-cm', manual && resolved.isClustered && resolved.indexerCount > 1);
   setVisible('mgmt-colocate-deployer', manual && resolved.isClustered);
+  updateManualHardwarePanel();
 }
 
 function updateSummaryBar(result: PlannerResult): void {
@@ -386,8 +533,32 @@ function bindPanelCollapse(): void {
   });
 }
 
+function indexerTierOptions(selected: IndexerHardwareTier): string {
+  const tiers: { value: IndexerHardwareTier; key: string }[] = [
+    { value: 'min', key: 'planner.field.indexerTierMin' },
+    { value: 'mid', key: 'planner.field.indexerTierMid' },
+    { value: 'high', key: 'planner.field.indexerTierHigh' },
+    { value: 'custom', key: 'planner.field.indexerTierCustom' },
+  ];
+  return tiers
+    .map(
+      (tier) =>
+        `<option value="${tier.value}" ${selected === tier.value ? 'selected' : ''}>${escapeHtml(t(tier.key))}</option>`,
+    )
+    .join('');
+}
+
 function renderApp(container: HTMLElement, initial: PlannerInputs): void {
-  const n = initial;
+  const n = normalizePlannerInputs(initial);
+  const roleOverridesHtml = HARDWARE_OVERRIDE_ROLES.map((role) =>
+    renderRoleHardwareOverride(
+      role,
+      n.roleHardwareOverrides?.[role] ?? {
+        enabled: false,
+        values: defaultHardwareOverrideValues(role),
+      },
+    ),
+  ).join('');
 
   container.innerHTML = `
     ${renderNav('planner')}
@@ -603,6 +774,23 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
               <input type="number" id="virtualizationOverheadPct" min="0" max="100" step="1" value="${n.virtualizationOverheadPct}" />
               <p class="field-hint">${escapeHtml(t('planner.field.virtualizationOverheadHint'))}</p>
             </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="manualHardwareSpec" ${n.manualHardwareSpec ? 'checked' : ''} />
+              <label for="manualHardwareSpec">${escapeHtml(t('planner.field.manualHardwareSpec'))}</label>
+            </div>
+            <div id="manual-hardware-controls" class="${n.manualHardwareSpec ? 'premium-shc-controls' : 'is-hidden premium-shc-controls'}">
+              <p class="field-hint">${escapeHtml(t('planner.field.manualHardwareHint'))}</p>
+              <div class="field" id="indexer-tier-field">
+                <label for="indexerHardwareTier" id="indexer-tier-label">${escapeHtml(
+                  n.singleServerDeployment
+                    ? t('planner.field.indexerHardwareTierCombined')
+                    : t('planner.field.indexerHardwareTier'),
+                )}</label>
+                <select id="indexerHardwareTier">${indexerTierOptions(n.indexerHardwareTier)}</select>
+              </div>
+              ${renderHardwareValueFields('indexerCustom', n.indexerCustomSpec, n.indexerHardwareTier !== 'custom')}
+              ${roleOverridesHtml}
+            </div>
           </div>
         </section>
       </form>
@@ -657,6 +845,16 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
     }
     // Item 6: seed sensible RF/SF defaults the first time Cluster Replication
     // is enabled in manual mode.
+    if (target.id === 'manualHardwareSpec' && checked('manualHardwareSpec')) {
+      const partial = readInputs();
+      const tier = inferAutoIndexerTier({
+        enterpriseSecurity: partial.enterpriseSecurity,
+        itsi: partial.itsi,
+        dailyIngestGb: partial.dailyIngestGb,
+      });
+      const tierEl = document.getElementById('indexerHardwareTier') as HTMLSelectElement | null;
+      if (tierEl) tierEl.value = tier;
+    }
     if (target.id === 'clusterReplication' && checked('clusterReplication')) {
       const count = resolveTopologySettings(normalizePlannerInputs(readInputs())).indexerCount;
       const def = defaultFactorsForIndexers(count, true);
@@ -672,6 +870,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   updateEnvironmentPanel();
   updateTopologyPanel(n);
   updateManagementPanel();
+  updateManualHardwarePanel();
   recalculate();
 }
 

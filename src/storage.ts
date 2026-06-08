@@ -1,4 +1,5 @@
 import { DEFAULT_INPUTS } from './lib/constants';
+import { withHardwareDefaults } from './lib/hardwareDefaults';
 import { defaultPeriod } from './lib/retentionUtils';
 import type { PlannerInputs, RetentionPeriod, TimeUnit } from './lib/types';
 
@@ -44,13 +45,13 @@ function migrateLegacy(parsed: Record<string, unknown>): PlannerInputs {
   delete base.multiSiteDeployment;
   delete base.siteCount;
 
-  return base as PlannerInputs;
+  return withHardwareDefaults(base as PlannerInputs);
 }
 
 export function loadInputs(): PlannerInputs {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_INPUTS };
+    if (!raw) return withHardwareDefaults({ ...DEFAULT_INPUTS });
     return migrateLegacy(JSON.parse(raw) as Record<string, unknown>);
   } catch {
     return { ...DEFAULT_INPUTS };

@@ -49,6 +49,16 @@ export const DEFAULT_INPUTS = {
   colocateShcDeployer: false,
   dedicateLicenseManager: false,
   dedicateMonitoringConsole: false,
+  manualHardwareSpec: false,
+  indexerHardwareTier: 'min' as const,
+  indexerCustomSpec: {
+    physicalCores: 12,
+    vcpu: 24,
+    ramGb: 12,
+    osDiskGb: 100,
+    splunkDiskGb: 100,
+  },
+  roleHardwareOverrides: {},
 };
 
 export const SIZING = {

@@ -5,10 +5,50 @@ import {
   isClusteredDeployment,
 } from './clusterFactors';
 import { getDefaultMaxVolumeGb } from './clusterEstimation';
-import type { PlannerInputs } from './types';
+import { withHardwareDefaults } from './hardwareDefaults';
+import type {
+  HardwareOverrideValues,
+  IndexerHardwareTier,
+  PlannerInputs,
+  RoleHardwareOverride,
+} from './types';
+import { HARDWARE_OVERRIDE_ROLES } from './types';
+
+const INDEXER_TIERS: IndexerHardwareTier[] = ['min', 'mid', 'high', 'custom'];
+
+function clampHardwareOverrideValues(values: HardwareOverrideValues): HardwareOverrideValues {
+  return {
+    physicalCores: Math.max(1, Math.floor(values.physicalCores)),
+    vcpu: Math.max(1, Math.floor(values.vcpu)),
+    ramGb: Math.max(4, Math.floor(values.ramGb)),
+    osDiskGb: Math.max(50, Math.floor(values.osDiskGb)),
+    splunkDiskGb: Math.max(50, Math.floor(values.splunkDiskGb)),
+  };
+}
+
+function normalizeHardwareInputs(inputs: PlannerInputs): PlannerInputs {
+  const normalized = withHardwareDefaults(inputs);
+  const tier = INDEXER_TIERS.includes(normalized.indexerHardwareTier)
+    ? normalized.indexerHardwareTier
+    : 'min';
+  normalized.indexerHardwareTier = tier;
+  normalized.indexerCustomSpec = clampHardwareOverrideValues(normalized.indexerCustomSpec);
+
+  const overrides = { ...normalized.roleHardwareOverrides };
+  for (const role of HARDWARE_OVERRIDE_ROLES) {
+    const entry = overrides[role];
+    if (!entry) continue;
+    overrides[role] = {
+      enabled: entry.enabled === true,
+      values: clampHardwareOverrideValues(entry.values),
+    } satisfies RoleHardwareOverride;
+  }
+  normalized.roleHardwareOverrides = overrides;
+  return normalized;
+}
 
 export function normalizePlannerInputs(raw: PlannerInputs): PlannerInputs {
-  const inputs = { ...raw };
+  const inputs = normalizeHardwareInputs({ ...raw });
 
   inputs.virtualizationOverheadPct = Math.max(
     0,

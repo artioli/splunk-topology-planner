@@ -195,6 +195,85 @@ describe('topologyEngine', () => {
     expect(esRow?.count).toBe(1);
   });
 
+  it('manual indexer tier high forces high-performance baseline', () => {
+    const t = computeTopology({
+      ...DEFAULT_INPUTS,
+      dailyIngestGb: 100,
+      manualHardwareSpec: true,
+      indexerHardwareTier: 'high',
+    });
+    const indexer = t.inventory.find((r) => r.role === 'indexer');
+    expect(indexer?.hardware.physicalCores).toBe(48);
+    expect(indexer?.hardware.ramGb).toBe(128);
+  });
+
+  it('custom indexer spec applies CUSTOM source and disk overrides', () => {
+    const t = computeTopology({
+      ...DEFAULT_INPUTS,
+      dailyIngestGb: 400,
+      manualHardwareSpec: true,
+      indexerHardwareTier: 'custom',
+      indexerCustomSpec: {
+        physicalCores: 20,
+        vcpu: 40,
+        ramGb: 80,
+        osDiskGb: 120,
+        splunkDiskGb: 250,
+      },
+    });
+    const indexer = t.inventory.find((r) => r.role === 'indexer');
+    expect(indexer?.hardware.physicalCores).toBe(20);
+    expect(indexer?.hardware.sources).toContain('CUSTOM');
+    expect(indexer?.osDiskGb).toBe(120);
+    expect(indexer?.splunkDiskGb).toBe(250);
+  });
+
+  it('per-role hardware override replaces search head specs', () => {
+    const t = computeTopology({
+      ...DEFAULT_INPUTS,
+      manualHardwareSpec: true,
+      roleHardwareOverrides: {
+        'search-head': {
+          enabled: true,
+          values: {
+            physicalCores: 32,
+            vcpu: 64,
+            ramGb: 128,
+            osDiskGb: 150,
+            splunkDiskGb: 500,
+          },
+        },
+      },
+    });
+    const sh = t.inventory.find((r) => r.role === 'search-head');
+    expect(sh?.hardware.physicalCores).toBe(32);
+    expect(sh?.hardware.sources).toContain('CUSTOM');
+    expect(sh?.osDiskGb).toBe(150);
+    expect(sh?.splunkDiskGb).toBe(500);
+  });
+
+  it('virtualization overhead still scales manual custom indexer compute', () => {
+    const t = computeTopology({
+      ...DEFAULT_INPUTS,
+      dailyIngestGb: 400,
+      environment: 'virtual',
+      virtualizationOverheadPct: 50,
+      manualHardwareSpec: true,
+      indexerHardwareTier: 'custom',
+      indexerCustomSpec: {
+        physicalCores: 12,
+        vcpu: 24,
+        ramGb: 12,
+        osDiskGb: 100,
+        splunkDiskGb: 100,
+      },
+    });
+    const indexer = t.inventory.find((r) => r.role === 'indexer');
+    expect(indexer?.hardware.physicalCores).toBe(18);
+    expect(indexer?.hardware.sources).toContain('VIRT');
+    expect(indexer?.hardware.sources).toContain('CUSTOM');
+  });
+
   it('manual ITSI SHC drives ITSI search head count', () => {
     const t = computeTopology({
       ...DEFAULT_INPUTS,

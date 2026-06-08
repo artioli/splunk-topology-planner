@@ -13,6 +13,7 @@ import {
 import { getPerformanceRecommendation } from './performanceRecommendations';
 import { resolveTopologySettings } from './topologyResolver';
 import type {
+  HardwareOverrideValues,
   HardwareSpec,
   I18nMessage,
   PlannerInputs,
@@ -64,16 +65,69 @@ function itsiSearchHeadCount(inputs: PlannerInputs, settings: ReturnType<typeof 
   return 1;
 }
 
+function applyHardwareOverride(
+  spec: HardwareSpec,
+  values: HardwareOverrideValues,
+  tierLabel = 'Custom',
+): HardwareSpec {
+  return {
+    ...spec,
+    physicalCores: values.physicalCores,
+    vcpu: values.vcpu,
+    ramGb: values.ramGb,
+    physicalCoresRecommended: undefined,
+    vcpuRecommended: undefined,
+    ramGbRecommended: undefined,
+    tierLabel,
+    sources: [...new Set([...spec.sources, 'CUSTOM' as const])],
+  };
+}
+
+function resolveRowHardwareOptions(
+  role: ServerRole,
+  hwOptions: HardwareOptions,
+  inputs: PlannerInputs,
+): HardwareOptions {
+  if (!inputs.manualHardwareSpec) return hwOptions;
+  const isIndexerRole = role === 'indexer' || role === 'combined';
+  if (!isIndexerRole || inputs.indexerHardwareTier === 'custom') return hwOptions;
+  return {
+    ...hwOptions,
+    indexerTier: inputs.indexerHardwareTier,
+  };
+}
+
 function addRow(
   inventory: ServerInventoryRow[],
   role: ServerRole,
   label: string,
   count: number,
   hwOptions: HardwareOptions,
+  inputs: PlannerInputs,
   virtOverheadPct = 0,
 ): void {
   if (count <= 0) return;
-  let hardware = resolveHardwareSpec(role, hwOptions);
+  const rowHwOptions = resolveRowHardwareOptions(role, hwOptions, inputs);
+  let hardware = resolveHardwareSpec(role, rowHwOptions);
+  let osDiskGb = getOsDiskGb(role);
+  let splunkDiskGb = getSplunkDiskGb(role);
+
+  if (inputs.manualHardwareSpec) {
+    const isIndexerRole = role === 'indexer' || role === 'combined';
+    if (isIndexerRole && inputs.indexerHardwareTier === 'custom') {
+      hardware = applyHardwareOverride(hardware, inputs.indexerCustomSpec);
+      osDiskGb = inputs.indexerCustomSpec.osDiskGb;
+      splunkDiskGb = inputs.indexerCustomSpec.splunkDiskGb;
+    }
+
+    const roleOverride = inputs.roleHardwareOverrides?.[role as keyof NonNullable<typeof inputs.roleHardwareOverrides>];
+    if (roleOverride?.enabled) {
+      hardware = applyHardwareOverride(hardware, roleOverride.values);
+      osDiskGb = roleOverride.values.osDiskGb;
+      splunkDiskGb = roleOverride.values.splunkDiskGb;
+    }
+  }
+
   if (virtOverheadPct > 0 && (role === 'indexer' || role === 'combined')) {
     hardware = applyVirtualizationOverhead(hardware, virtOverheadPct);
   }
@@ -82,8 +136,8 @@ function addRow(
     roleLabel: label,
     count,
     hardware,
-    osDiskGb: getOsDiskGb(role),
-    splunkDiskGb: getSplunkDiskGb(role),
+    osDiskGb,
+    splunkDiskGb,
   });
 }
 
@@ -182,12 +236,12 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
   const itsiShCount = itsiSearchHeadCount(inputs, settings);
 
   if (singleServer) {
-    addRow(inventory, 'combined', 'Combined indexer + search (S1)', 1, hwOptions, virtPct);
+    addRow(inventory, 'combined', 'Combined indexer + search (S1)', 1, hwOptions, inputs, virtPct);
     if (inputs.enterpriseSecurity) {
-      addRow(inventory, 'search-head-es', 'Dedicated Enterprise Security SH', 1, hwOptions);
+      addRow(inventory, 'search-head-es', 'Dedicated Enterprise Security SH', 1, hwOptions, inputs);
     }
     if (inputs.itsi) {
-      addRow(inventory, 'search-head-itsi', 'Dedicated ITSI SH', 1, hwOptions);
+      addRow(inventory, 'search-head-itsi', 'Dedicated ITSI SH', 1, hwOptions, inputs);
     }
   } else {
     addRow(
@@ -196,6 +250,7 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
       hasShc ? `Search head cluster (operational, ${operationalSearchHeadCount})` : `Search head (operational, ${operationalSearchHeadCount})`,
       operationalSearchHeadCount,
       hwOptions,
+      inputs,
     );
     if (esShCount > 0) {
       addRow(
@@ -204,6 +259,7 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
         esShCount >= 3 ? 'Enterprise Security SHC' : 'Enterprise Security search head',
         esShCount,
         hwOptions,
+        inputs,
       );
     }
     if (itsiShCount > 0) {
@@ -213,10 +269,11 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
         itsiShCount >= 3 ? 'ITSI search head cluster' : 'ITSI search head',
         itsiShCount,
         hwOptions,
+        inputs,
       );
     }
 
-    addRow(inventory, 'indexer', isClustered ? 'Clustered indexer peer' : 'Indexer', indexerCount, hwOptions, virtPct);
+    addRow(inventory, 'indexer', isClustered ? 'Clustered indexer peer' : 'Indexer', indexerCount, hwOptions, inputs, virtPct);
 
     const managementPlan = buildManagementPlan(inputs, {
       isClustered,
@@ -226,7 +283,7 @@ export function computeTopology(inputs: PlannerInputs): TopologyResult {
     });
 
     for (const row of managementHostsToInventoryLabels(managementPlan)) {
-      addRow(inventory, row.role, row.label, row.count, hwOptions);
+      addRow(inventory, row.role, row.label, row.count, hwOptions, inputs);
     }
 
     if (inputs.enterpriseSecurity) {

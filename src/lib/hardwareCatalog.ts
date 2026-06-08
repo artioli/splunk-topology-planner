@@ -1,10 +1,13 @@
 import { SIZING } from './constants';
 import type { HardwareSpec, ServerRole } from './types';
 
+export type IndexerTier = 'min' | 'mid' | 'high';
+
 export interface HardwareOptions {
   enterpriseSecurity: boolean;
   itsi: boolean;
   highIngest?: boolean;
+  indexerTier?: IndexerTier;
 }
 
 interface RawSpec {
@@ -130,7 +133,7 @@ function mergeSpecs(base: RawSpec, ...overlays: (RawSpec | undefined)[]): Hardwa
   let vcpuRecommended = base.vcpuRecommended;
   let ramGb = base.ramGb;
   let ramGbRecommended = base.ramGbRecommended;
-  const sources: ('10.4' | 'ES' | 'ITSI')[] = ['10.4'];
+  const sources: ('10.4' | 'ES' | 'ITSI' | 'CUSTOM')[] = ['10.4'];
   const storageNotes = [...base.storageNotes];
 
   for (const o of overlays) {
@@ -170,9 +173,16 @@ function mergeSpecs(base: RawSpec, ...overlays: (RawSpec | undefined)[]): Hardwa
   };
 }
 
+export function getIndexerBaselineByTier(tier: IndexerTier): RawSpec {
+  if (tier === 'high') return BASELINE_104.indexerHigh;
+  if (tier === 'mid') return BASELINE_104.indexerMid;
+  return BASELINE_104.indexerMin;
+}
+
 export function pickIndexerBaseline(
   options: HardwareOptions,
 ): RawSpec {
+  if (options.indexerTier) return getIndexerBaselineByTier(options.indexerTier);
   if (options.enterpriseSecurity || options.itsi) return BASELINE_104.indexerHigh;
   if (options.highIngest) return BASELINE_104.indexerMid;
   return BASELINE_104.indexerMin;
@@ -185,11 +195,15 @@ export function resolveHardwareSpec(
   const { enterpriseSecurity, itsi } = options;
 
   switch (role) {
-    case 'combined':
+    case 'combined': {
+      const base = options.indexerTier
+        ? pickIndexerBaseline(options)
+        : BASELINE_104.single;
       return mergeSpecs(
-        BASELINE_104.single,
+        base,
         enterpriseSecurity || itsi ? ES_MINIMUM : undefined,
       );
+    }
 
     case 'search-head':
       return mergeSpecs(BASELINE_104.searchHead);
