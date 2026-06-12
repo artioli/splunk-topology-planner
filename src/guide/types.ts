@@ -104,4 +104,6 @@ export interface GuideState {
   linuxDistro: LinuxDistro;
   validatedChecks: Record<string, string[]>;
   skipValidationSteps: string[];
+  currentStepId: string | null;
+  setupCollapsed: boolean;
 }

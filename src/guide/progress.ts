@@ -12,6 +12,8 @@ const DEFAULT_STATE: GuideState = {
   linuxDistro: 'rhel',
   validatedChecks: {},
   skipValidationSteps: [],
+  currentStepId: null,
+  setupCollapsed: false,
 };
 
 export function loadGuideState(): GuideState {
@@ -28,6 +30,8 @@ export function loadGuideState(): GuideState {
       linuxDistro: parsed.linuxDistro ?? 'rhel',
       validatedChecks: parsed.validatedChecks ?? {},
       skipValidationSteps: parsed.skipValidationSteps ?? [],
+      currentStepId: parsed.currentStepId ?? null,
+      setupCollapsed: parsed.setupCollapsed ?? false,
     };
   } catch {
     return { ...DEFAULT_STATE, hostConfig: defaultHostConfig() };

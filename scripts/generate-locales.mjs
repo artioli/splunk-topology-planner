@@ -17,6 +17,7 @@ function add(key, en, pt, es) {
 
 // --- NAV / UI ---
 add('nav.brand', 'Splunk Planner', 'Splunk Planner', 'Splunk Planner');
+add('nav.home', 'Home', 'Início', 'Inicio');
 add('nav.planner', 'Topology Planner', 'Planejador de topologia', 'Planificador de topología');
 add('nav.guide', 'Deployment Guide', 'Guia de implantação', 'Guía de implementación');
 add('nav.themeToggle', 'Toggle color theme', 'Alternar tema de cor', 'Alternar tema de color');
@@ -41,6 +42,21 @@ add('guide.copied', 'Copied!', 'Copiado!', '¡Copiado!');
 add('guide.progress', '{done} / {total} steps complete', '{done} / {total} passos concluídos', '{done} / {total} pasos completados');
 add('guide.jumpToStep', 'Jump to step', 'Ir para o passo', 'Ir al paso');
 add('guide.markComplete', 'Mark step complete', 'Marcar passo como concluído', 'Marcar paso como completado');
+add('guide.navPrevious', 'Previous', 'Anterior', 'Anterior');
+add('guide.navNext', 'Next', 'Próximo', 'Siguiente');
+add('guide.setupToggle', 'Deployment setup', 'Configuração da implantação', 'Configuración de implementación');
+add('guide.stepCounter', 'Step {current} of {total}', 'Passo {current} de {total}', 'Paso {current} de {total}');
+add('home.title', 'Splunk On-Prem Topology Planner', 'Planejador de topologia Splunk on-prem', 'Planificador de topología Splunk on-prem');
+add('home.subtitle', 'Plan on-premises Splunk Enterprise deployments with SVA-aligned sizing, storage estimates, and a step-by-step Linux deployment guide.', 'Planeje implantações Splunk Enterprise on-premises com dimensionamento alinhado à SVA, estimativas de armazenamento e um guia Linux passo a passo.', 'Planifique implementaciones Splunk Enterprise on-premises con dimensionamiento alineado a SVA, estimaciones de almacenamiento y una guía Linux paso a paso.');
+add('home.cardPlannerTitle', 'Topology Planner', 'Planejador de topologia', 'Planificador de topología');
+add('home.cardPlannerDesc', 'Interactive wizard for ingest, retention, clustering, premium apps, and hardware baselines.', 'Assistente interativo para ingestão, retenção, cluster, apps premium e baselines de hardware.', 'Asistente interactivo para ingestión, retención, cluster, apps premium y baselines de hardware.');
+add('home.cardPlannerCta', 'Open planner', 'Abrir planejador', 'Abrir planificador');
+add('home.cardGuideTitle', 'Deployment Guide', 'Guia de implantação', 'Guía de implementación');
+add('home.cardGuideDesc', 'Copy-paste install commands filtered by deployment profile and Linux distro.', 'Comandos de instalação filtrados por perfil de implantação e distro Linux.', 'Comandos de instalación filtrados por perfil de implementación y distro Linux.');
+add('home.cardGuideCta', 'Open guide', 'Abrir guia', 'Abrir guía');
+add('home.cardDocsTitle', 'Splunk documentation', 'Documentação Splunk', 'Documentación Splunk');
+add('home.cardDocsDesc', 'Official Splunk Validated Architectures and reference documentation.', 'Splunk Validated Architectures e documentação oficial de referência.', 'Splunk Validated Architectures y documentación oficial de referencia.');
+add('home.cardDocsCta', 'View SVA docs', 'Ver docs SVA', 'Ver docs SVA');
 add('guide.handoff', 'Planner handoff: {svaCode} → {profileLabel}', 'Handoff do planejador: {svaCode} → {profileLabel}', 'Transferencia del planificador: {svaCode} → {profileLabel}');
 add('guide.handoffDetail', '{indexerCount} indexer(s){shcSuffix}', '{indexerCount} indexer(s){shcSuffix}', '{indexerCount} indexer(s){shcSuffix}');
 add('guide.linuxDistro', 'Linux distribution', 'Distribuição Linux', 'Distribución Linux');

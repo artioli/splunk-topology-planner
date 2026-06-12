@@ -411,7 +411,7 @@ function updateTopologyPanel(partial?: PlannerInputs): void {
 function updateManagementPanel(): void {
   const manual = checked('managementManualConfig');
   const single = checked('singleServerDeployment');
-  setVisible('management-section', !single);
+  setVisible('panel-management', !single);
   setVisible('management-manual-fields', manual && !single);
   setVisible('management-auto-summary', !manual && !single);
 
@@ -548,6 +548,54 @@ function indexerTierOptions(selected: IndexerHardwareTier): string {
     .join('');
 }
 
+function renderPlannerSectionNavLinks(): string {
+  const sections = [
+    { id: 'panel-workload', labelKey: 'planner.panels.workload' },
+    { id: 'panel-retention', labelKey: 'planner.panels.retention' },
+    { id: 'panel-premium', labelKey: 'planner.panels.premium' },
+    { id: 'panel-topology', labelKey: 'planner.panels.topology' },
+    { id: 'panel-management', labelKey: 'planner.panels.management' },
+    { id: 'panel-environment', labelKey: 'planner.panels.environment' },
+  ];
+  return `<ul class="planner-section-nav-list">${sections
+    .map(
+      (s) =>
+        `<li><a href="#${s.id}" class="planner-section-nav-link" data-section="${s.id}">${escapeHtml(t(s.labelKey))}</a></li>`,
+    )
+    .join('')}</ul>`;
+}
+
+function renderPlannerSectionChips(): string {
+  const sections = [
+    { id: 'panel-workload', labelKey: 'planner.panels.workload' },
+    { id: 'panel-retention', labelKey: 'planner.panels.retention' },
+    { id: 'panel-premium', labelKey: 'planner.panels.premium' },
+    { id: 'panel-topology', labelKey: 'planner.panels.topology' },
+    { id: 'panel-management', labelKey: 'planner.panels.management' },
+    { id: 'panel-environment', labelKey: 'planner.panels.environment' },
+  ];
+  return `<div class="planner-section-chips">${sections
+    .map(
+      (s) =>
+        `<a href="#${s.id}" class="planner-section-chip" data-section="${s.id}">${escapeHtml(t(s.labelKey))}</a>`,
+    )
+    .join('')}</div>`;
+}
+
+function bindPlannerSectionNav(): void {
+  document.querySelectorAll('.planner-section-nav-link, .planner-section-chip').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = (link as HTMLElement).dataset.section;
+      if (!id) return;
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.planner-section-nav-link, .planner-section-chip').forEach((el) => {
+        el.classList.toggle('is-active', (el as HTMLElement).dataset.section === id);
+      });
+    });
+  });
+}
+
 function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   const n = normalizePlannerInputs(initial);
   const roleOverridesHtml = HARDWARE_OVERRIDE_ROLES.map((role) =>
@@ -562,16 +610,17 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
 
   container.innerHTML = `
     ${renderNav('planner')}
-    <header class="app-header">
-      <h1>${escapeHtml(t('planner.title'))}</h1>
-      <p class="subtitle">${escapeHtml(t('planner.subtitle'))} · <a href="#guide">${escapeHtml(t('planner.subtitleGuideLink'))}</a></p>
-      <div class="summary-bar summary-bar--sticky" id="summary-content"></div>
-    </header>
-
-    <main class="layout planner-layout">
-      <div class="wizard-column">
-      <form id="planner-form" class="wizard">
-        <section class="panel">
+    <div class="planner-shell">
+      <div class="planner-summary-strip">
+        <div class="summary-bar" id="summary-content"></div>
+      </div>
+      ${renderPlannerSectionChips()}
+      <div class="planner-body">
+        <nav class="planner-section-nav" aria-label="Sections">${renderPlannerSectionNavLinks()}</nav>
+        <div class="planner-form-column">
+          <h1 class="planner-page-title">${escapeHtml(t('planner.title'))}</h1>
+          <form id="planner-form" class="wizard">
+        <section class="panel" id="panel-workload">
           <div class="panel-header">${escapeHtml(t('planner.panels.workload'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
@@ -614,7 +663,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="panel-retention">
           <div class="panel-header">${escapeHtml(t('planner.panels.retention'))}</div>
           <div class="panel-body">
             <div class="retention-stack">
@@ -626,8 +675,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-header">${escapeHtml(t('planner.panels.premium'))}</div>
+        <section class="panel" id="panel-premium">
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="enterpriseSecurity" ${n.enterpriseSecurity ? 'checked' : ''} />
@@ -641,8 +689,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-header">${escapeHtml(t('planner.panels.topology'))}</div>
+        <section class="panel" id="panel-topology">
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="singleServerDeployment" ${n.singleServerDeployment ? 'checked' : ''} />
@@ -720,7 +767,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
 
-        <section class="panel" id="management-section">
+        <section class="panel" id="panel-management">
           <div class="panel-header">${escapeHtml(t('planner.panels.management'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
@@ -759,8 +806,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-header">${escapeHtml(t('planner.panels.environment'))}</div>
+        <section class="panel" id="panel-environment">
           <div class="panel-body">
             <div class="field">
               <label for="environment">${escapeHtml(t('planner.field.environment'))}</label>
@@ -794,16 +840,17 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
           </div>
         </section>
       </form>
+        </div>
+
+        <div class="planner-results-column" id="results-column">
+          <div id="results-container"></div>
+        </div>
       </div>
 
-      <div class="results-column" id="results-column">
-        <div id="results-container"></div>
-      </div>
-    </main>
-
-    <footer class="app-footer">
-      <p class="field-hint">${escapeHtml(t('planner.disclaimer'))}</p>
-    </footer>
+      <footer class="app-footer">
+        <p class="field-hint">${escapeHtml(t('planner.disclaimer'))}</p>
+      </footer>
+    </div>
 
     <button type="button" id="jump-results" class="btn jump-results is-hidden">${escapeHtml(t('planner.results.jumpToResults'))}</button>
     <div class="mobile-copy-bar">
@@ -814,6 +861,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
   bindPanelCollapse();
   collapseMobileWizardPanels();
   bindJumpToResults();
+  bindPlannerSectionNav();
 
   const form = document.getElementById('planner-form');
   let wasAutoCluster = checked('autoClusterEstimation');

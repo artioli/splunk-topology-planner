@@ -2,12 +2,14 @@ import { getLocale, setLocale, t } from './i18n';
 import type { Locale } from './i18n/types';
 import { cycleTheme, getStoredTheme, themeToggleLabel } from './theme';
 
-export type AppRoute = 'planner' | 'guide';
+export type AppRoute = 'home' | 'planner' | 'guide';
 
 export function getRoute(): AppRoute {
-  const hash = window.location.hash.replace(/^#/, '') || 'planner';
+  const hash = window.location.hash.replace(/^#/, '');
   const route = hash.split('?')[0].split('&')[0];
-  return route === 'guide' ? 'guide' : 'planner';
+  if (route === 'guide') return 'guide';
+  if (route === 'planner') return 'planner';
+  return 'home';
 }
 
 export function getHashParams(): URLSearchParams {
@@ -32,8 +34,9 @@ export function renderNav(active: AppRoute): string {
   const theme = getStoredTheme();
   return `
     <nav class="app-nav app-nav--top" aria-label="Main">
-      <div class="nav-brand">${escapeHtml(t('nav.brand'))}</div>
+      <a href="#home" class="nav-brand-link">${escapeHtml(t('nav.brand'))}</a>
       <div class="nav-links nav-links--desktop">
+        <a href="#home" class="nav-link ${active === 'home' ? 'active' : ''}">${escapeHtml(t('nav.home'))}</a>
         <a href="#planner" class="nav-link ${active === 'planner' ? 'active' : ''}">${escapeHtml(t('nav.planner'))}</a>
         <a href="#guide" class="nav-link ${active === 'guide' ? 'active' : ''}">${escapeHtml(t('nav.guide'))}</a>
       </div>
@@ -48,6 +51,10 @@ export function renderNav(active: AppRoute): string {
       </div>
     </nav>
     <nav class="app-nav app-nav--bottom" aria-label="Mobile">
+      <a href="#home" class="nav-tab ${active === 'home' ? 'active' : ''}">
+        <span class="nav-tab-icon" aria-hidden="true">🏠</span>
+        <span>${escapeHtml(t('nav.home'))}</span>
+      </a>
       <a href="#planner" class="nav-tab ${active === 'planner' ? 'active' : ''}">
         <span class="nav-tab-icon" aria-hidden="true">📊</span>
         <span>${escapeHtml(t('nav.planner'))}</span>
