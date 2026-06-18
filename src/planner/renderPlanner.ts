@@ -610,7 +610,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
 
   container.innerHTML = `
     ${renderNav('planner')}
-    <div class="planner-shell">
+    <div class="planner-shell app-viewport">
       <div class="planner-summary-strip">
         <div class="summary-bar" id="summary-content"></div>
       </div>

@@ -1,44 +1,99 @@
 :root {
-  --brand: #f05a28;
-  --brand-dim: #c9471f;
-  --brand-hover: #ff6b3d;
-  --sidebar-bg: #1b1f23;
-  --sidebar-text: #e8eef4;
-  --sidebar-muted: #94a8bc;
-  --sidebar-border: #2d3744;
-  --sidebar-active: rgba(240, 90, 40, 0.15);
-  --content-bg: #f7f8fa;
+  /* 2026 Splunk / Cisco palette */
+  --magenta-50: #ff007f;
+  --orange-50: #ff9000;
+  --link-light: #0a60ff;
+  --link-dark: #45d4ff;
+  --cisco-blue-50: #02c8ff;
+  --splunk-blue: #000b3f;
+
+  --neutral-dark-5: #04070b;
+  --neutral-dark-15: #0b1118;
+  --neutral-dark-25: #131a23;
+  --neutral-dark-35: #1b232d;
+  --neutral-dark-45: #323b47;
+  --neutral-dark-90: #bbc1c9;
+  --neutral-light-95: #e9eef4;
+  --neutral-light-98: #f2f5fa;
+
+  --text-heading-light: #04070b;
+  --text-body-light: #363c44;
+  --text-heading-dark: #f2f5fa;
+  --text-body-dark: #bbc1c9;
+
+  --success-light: #007b00;
+  --success-dark: #45a245;
+  --warn-light: #c72e2e;
+  --warn-dark: #fe5252;
+
+  --gradient-brand: linear-gradient(90deg, var(--magenta-50) 10%, var(--orange-50) 90%);
+  --gradient-page-light: linear-gradient(180deg, var(--neutral-light-98) 0%, var(--neutral-light-95) 100%);
+  --gradient-page-dark: linear-gradient(180deg, var(--neutral-dark-5) 0%, var(--neutral-dark-15) 100%);
+
+  /* Semantic aliases (light default) */
+  --link: var(--link-light);
+  --brand: var(--magenta-50);
+  --brand-accent: var(--magenta-50);
+  --sidebar-active: rgba(255, 0, 127, 0.12);
+  --sidebar-bg: var(--neutral-dark-25);
+  --sidebar-text: var(--neutral-light-98);
+  --sidebar-muted: var(--neutral-dark-90);
+  --sidebar-border: var(--neutral-dark-35);
+  --content-bg: var(--neutral-light-98);
+  --surface-page: var(--neutral-light-98);
+  --surface-card: #ffffff;
+
   --header-height: 3.5rem;
-  --sidebar-width: 280px;
-  --layout-max: 1440px;
+  --sidebar-width: min(280px, 22vw);
+  --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --btn-primary-bg: #000000;
+  --btn-primary-fg: #ffffff;
+  --btn-primary-border: #000000;
 }
 
 html[data-theme='light'] {
-  --brand: #f05a28;
-  --brand-dim: #c9471f;
-  --content-bg: #f7f8fa;
-  --sidebar-bg: #1b1f23;
+  --link: var(--link-light);
+  --content-bg: var(--neutral-light-98);
+  --surface-page: var(--neutral-light-98);
+  --surface-card: #ffffff;
+  --sidebar-bg: var(--neutral-dark-25);
+  --btn-primary-bg: #000000;
+  --btn-primary-fg: #ffffff;
+  --btn-primary-border: #000000;
 }
 
 html[data-theme='dark'] {
-  --brand: #ff6b3d;
-  --brand-dim: #f05a28;
-  --content-bg: #0f1419;
-  --sidebar-bg: #141820;
+  --link: var(--link-dark);
+  --content-bg: var(--neutral-dark-5);
+  --surface-page: var(--neutral-dark-5);
+  --surface-card: var(--neutral-dark-25);
+  --sidebar-bg: var(--neutral-dark-15);
+  --sidebar-border: var(--neutral-dark-35);
+  --btn-primary-bg: #ffffff;
+  --btn-primary-fg: #000000;
+  --btn-primary-border: #ffffff;
 }
 
 @media (prefers-color-scheme: light) {
   html[data-theme='system'],
   html:not([data-theme]) {
-    --brand: #f05a28;
-    --content-bg: #f7f8fa;
+    --link: var(--link-light);
+    --content-bg: var(--neutral-light-98);
+    --surface-page: var(--neutral-light-98);
   }
 }
 
 @media (prefers-color-scheme: dark) {
   html[data-theme='system'],
   html:not([data-theme]) {
-    --brand: #ff6b3d;
-    --content-bg: #0f1419;
+    --link: var(--link-dark);
+    --content-bg: var(--neutral-dark-5);
+    --surface-page: var(--neutral-dark-5);
+    --surface-card: var(--neutral-dark-25);
+    --btn-primary-bg: #ffffff;
+    --btn-primary-fg: #000000;
+    --btn-primary-border: #ffffff;
   }
 }

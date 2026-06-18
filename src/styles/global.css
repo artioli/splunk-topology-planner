@@ -1,17 +1,20 @@
 @import './tokens.css';
+@import './typography.css';
+@import './layout.css';
 @import './shell.css';
 
 :root {
-  --bg: #0f1419;
-  --surface: #1a2332;
-  --surface2: #243044;
-  --border: #2d3f56;
-  --text: #e8eef4;
-  --muted: #94a8bc;
-  --accent: #65a637;
-  --accent-dim: #4a7d28;
-  --warn: #e8a838;
-  --danger: #e85d5d;
+  --bg: var(--surface-page);
+  --surface: var(--surface-card);
+  --surface2: var(--neutral-light-95, #eef2f6);
+  --border: #d5dce5;
+  --text: var(--text-body-light);
+  --text-heading: var(--text-heading-light);
+  --muted: #656c76;
+  --accent: var(--success-light);
+  --accent-dim: #005900;
+  --warn: var(--warn-light);
+  --danger: var(--warn-light);
   --radius: 10px;
   --radius-sm: 8px;
   --touch: 44px;
@@ -23,7 +26,7 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --nav-bottom-height: 3.75rem;
-  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-display);
   font-size: 16px;
   line-height: 1.55;
   color: var(--text);
@@ -31,35 +34,42 @@
 }
 
 html[data-theme='light'] {
-  --bg: #f4f7fa;
+  --bg: var(--neutral-light-98);
   --surface: #ffffff;
-  --surface2: #eef2f6;
-  --border: #c5d3e0;
-  --text: #1a2836;
-  --muted: #5a7088;
-  --shadow: 0 2px 8px rgba(26, 40, 54, 0.08);
+  --surface2: var(--neutral-light-95);
+  --border: #d5dce5;
+  --text: var(--text-body-light);
+  --text-heading: var(--text-heading-light);
+  --muted: #656c76;
+  --accent: var(--success-light);
+  --accent-dim: #005900;
+  --shadow: 0 2px 8px rgba(12, 23, 36, 0.06);
 }
 
 html[data-theme='dark'] {
-  --bg: #0f1419;
-  --surface: #1a2332;
-  --surface2: #243044;
-  --border: #2d3f56;
-  --text: #e8eef4;
-  --muted: #94a8bc;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --bg: var(--neutral-dark-5);
+  --surface: var(--neutral-dark-25);
+  --surface2: var(--neutral-dark-35);
+  --border: var(--neutral-dark-45);
+  --text: var(--text-body-dark);
+  --text-heading: var(--text-heading-dark);
+  --muted: #929aa4;
+  --accent: var(--success-dark);
+  --accent-dim: #2d7a2d;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 @media (prefers-color-scheme: light) {
   html[data-theme='system'],
   html:not([data-theme]) {
-    --bg: #f4f7fa;
+    --bg: var(--neutral-light-98);
     --surface: #ffffff;
-    --surface2: #eef2f6;
-    --border: #c5d3e0;
-    --text: #1a2836;
-    --muted: #5a7088;
-    --shadow: 0 2px 8px rgba(26, 40, 54, 0.08);
+    --surface2: var(--neutral-light-95);
+    --border: #d5dce5;
+    --text: var(--text-body-light);
+    --text-heading: var(--text-heading-light);
+    --muted: #656c76;
+    --shadow: 0 2px 8px rgba(12, 23, 36, 0.06);
   }
 }
 
@@ -88,7 +98,7 @@ body {
 }
 
 a {
-  color: var(--accent);
+  color: var(--link);
 }
 
 .app-header {
@@ -166,9 +176,10 @@ a {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-4);
-  max-width: var(--layout-max, 1440px);
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   min-width: 0;
+  width: 100%;
 }
 
 .planner-layout {
@@ -647,7 +658,7 @@ ul.compact li {
 }
 
 .formula-hint {
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
 }
 
@@ -707,10 +718,20 @@ ul.compact li {
   font-size: 0.9rem;
 }
 
-.nav-link.active,
 .nav-link:hover {
   color: var(--text);
   background: var(--surface2);
+}
+
+.nav-link.active {
+  color: var(--text);
+  background: var(--surface2);
+  box-shadow: inset 0 -2px 0 var(--magenta-50);
+}
+
+.nav-tab.active {
+  color: var(--link);
+  background: rgba(10, 96, 255, 0.08);
 }
 
 .theme-toggle {
@@ -909,9 +930,9 @@ ul.compact li {
   font-weight: 500;
 }
 
-.nav-tab.active {
-  color: var(--accent);
-  background: rgba(101, 166, 55, 0.08);
+.nav-link:hover {
+  color: var(--text);
+  background: var(--surface2);
 }
 
 .nav-tab-icon {
@@ -1170,7 +1191,7 @@ ul.compact li {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow-x: auto;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   white-space: pre-wrap;
   word-break: break-word;

@@ -181,6 +181,17 @@ function renderValidations(step: GuideStep, state: GuideState): string {
     </div>`;
 }
 
+function renderGuideBreadcrumb(phase: string): string {
+  return `
+    <nav class="guide-breadcrumb" aria-label="Breadcrumb">
+      <a href="#home">${escapeHtml(t('guide.breadcrumbHome'))}</a>
+      <span class="guide-breadcrumb-sep">›</span>
+      <a href="#guide">${escapeHtml(t('guide.breadcrumbGuide'))}</a>
+      <span class="guide-breadcrumb-sep">›</span>
+      <span aria-current="page">${escapeHtml(phase)}</span>
+    </nav>`;
+}
+
 function renderStepViewContent(step: GuideStep, state: GuideState): string {
   const done = isStepComplete(state, step.id);
   const phase = t(stepPhaseKey(step.id));
@@ -190,8 +201,11 @@ function renderStepViewContent(step: GuideStep, state: GuideState): string {
   const canComplete = validationsComplete(state, step);
   return `
     <article class="guide-step-view" data-step-id="${step.id}" id="step-${step.id}">
-      <p class="guide-step-phase">${escapeHtml(phase)}</p>
-      <h2 class="guide-step-title">${escapeHtml(title)}</h2>
+      <header class="guide-doc-header">
+        <p class="splunk-eyebrow guide-step-phase">${escapeHtml(phase)}</p>
+        <h1 class="guide-step-title">${escapeHtml(title)}</h1>
+        <span class="guide-read-badge">${escapeHtml(t('guide.readTime'))}</span>
+      </header>
       <div class="step-meta">
         <div class="target-chips">${targets}</div>
         <div class="doc-links">${renderDocLinks(step.docLinks)}</div>
@@ -268,7 +282,7 @@ function renderGuideStepNav(steps: GuideStep[], state: GuideState, currentId: st
       const done = isStepComplete(state, s.id);
       const active = s.id === currentId;
       const label = t(stepTitleKey(s.id));
-      const marker = done ? '✓' : '○';
+      const marker = done ? '✓' : active ? '●' : '○';
       return `
       <li class="guide-step-nav-item">
         <button type="button" class="guide-step-nav-link ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}" data-step-nav="${s.id}">
@@ -459,27 +473,30 @@ function renderGuideContent(container: HTMLElement, state: GuideState, stepIdOve
   const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
   const currentStepId = stepIdOverride ?? resolveCurrentStepId(steps, state);
   const stateWithStep = { ...state, currentStepId };
+  const currentStep = steps.find((s) => s.id === currentStepId);
+  const phaseLabel = currentStep ? t(stepPhaseKey(currentStep.id)) : '';
 
   container.innerHTML = `
     ${renderNav('guide')}
-    <div class="guide-shell">
-      <header class="guide-page-header">
-        <button type="button" class="guide-drawer-toggle" id="guide-drawer-toggle" aria-label="Menu">☰</button>
-        <div>
-          <h1>${escapeHtml(t('guide.title'))}</h1>
-          ${renderProgressBar(steps, stateWithStep)}
-        </div>
-      </header>
-      ${renderHandoffBanner(stateWithStep)}
+    <div class="guide-shell app-viewport">
+      <div class="guide-mobile-bar">
+        <button type="button" class="guide-drawer-toggle" id="guide-drawer-toggle" aria-label="${escapeHtml(t('guide.menuToggle'))}">☰</button>
+        <div class="guide-mobile-progress">${renderProgressBar(steps, stateWithStep)}</div>
+      </div>
       <div class="guide-sidebar-backdrop" id="guide-sidebar-backdrop"></div>
       <div class="guide-body">
         <aside class="guide-sidebar" id="guide-sidebar">
           ${renderGuideSetup(stateWithStep)}
+          <div class="guide-sidebar-section-label">${escapeHtml(t('guide.sidebarSteps'))}</div>
           ${renderGuideStepNav(steps, stateWithStep, currentStepId)}
         </aside>
         <div class="guide-main">
-          <div class="guide-main-inner" id="guide-steps">
-            ${renderStepsHtml(steps, stateWithStep, currentStepId)}
+          ${renderGuideBreadcrumb(phaseLabel)}
+          ${renderHandoffBanner(stateWithStep)}
+          <div class="guide-main-inner">
+            <div class="guide-prose prose-measure" id="guide-steps">
+              ${renderStepsHtml(steps, stateWithStep, currentStepId)}
+            </div>
           </div>
           ${renderGuideFooter(steps, currentStepId)}
         </div>

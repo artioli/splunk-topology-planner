@@ -1,0 +1,29 @@
+.app-viewport {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.app-viewport--padded {
+  padding-inline: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.prose-measure {
+  max-width: 75ch;
+}
+
+.prose-measure--wide {
+  max-width: min(90ch, 100%);
+}
+
+@media (min-width: 1920px) {
+  .app-viewport--padded {
+    padding-inline: clamp(1.5rem, 3vw, 4rem);
+  }
+}
+
+@media (min-width: 2560px) {
+  .app-viewport--padded {
+    padding-inline: clamp(2rem, 4vw, 5rem);
+  }
+}
