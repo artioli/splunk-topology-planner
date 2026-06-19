@@ -280,6 +280,16 @@ html[data-theme='dark'] .home-hero-band {
 @media (min-width: 1024px) {
   .guide-body {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .guide-sidebar {
+    position: sticky;
+    top: var(--header-height);
+    align-self: start;
+    min-height: calc(100vh - var(--header-height));
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
   }
 }
 
@@ -417,7 +427,7 @@ html[data-theme='dark'] .home-hero-band {
 
 .guide-step-nav-link:hover {
   color: var(--sidebar-text);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sidebar-hover);
 }
 
 .guide-step-nav-link.is-active {
@@ -659,15 +669,20 @@ html[data-theme='dark'] .guide-warning {
 
 @media (min-width: 1200px) {
   .planner-body {
-    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(400px, 38%);
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr) minmax(400px, 38%);
+    align-items: start;
   }
 
   .planner-section-nav {
-    display: block;
+    display: flex;
+    flex-direction: column;
     grid-column: 1;
+    grid-row: 1 / -1;
     position: sticky;
     top: var(--planner-scroll-offset);
     align-self: start;
+    width: 100%;
+    min-height: calc(100vh - var(--planner-scroll-offset));
     max-height: calc(100vh - var(--planner-scroll-offset));
     overflow-y: auto;
     padding: var(--space-4) 0;
@@ -687,13 +702,13 @@ html[data-theme='dark'] .guide-warning {
 
 @media (min-width: 1920px) {
   .planner-body {
-    grid-template-columns: 220px minmax(0, 1fr) minmax(440px, 42%);
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr) minmax(440px, 42%);
   }
 }
 
 @media (min-width: 2560px) {
   .planner-body {
-    grid-template-columns: 220px minmax(0, 1fr) minmax(480px, 560px);
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr) minmax(480px, 560px);
   }
 }
 
@@ -726,7 +741,7 @@ html[data-theme='dark'] .guide-warning {
 
 .planner-section-nav-link:hover {
   color: var(--sidebar-text);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sidebar-hover);
 }
 
 .planner-section-nav-link.is-active {
