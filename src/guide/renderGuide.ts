@@ -20,15 +20,17 @@ import {
   validationsComplete,
 } from './progress';
 import { substitute, substituteCommands } from './substitute';
-import { filterStepsForProfile, targetLabel } from './steps';
-import type {
-  DeploymentProfileId,
-  GuideBlock,
-  GuideState,
-  GuideStep,
-  HostConfig,
-  LinuxDistro,
-  StepValidation,
+import { filterNavigableSteps, filterStepsForProfile, getLinuxTipsStep, targetLabel } from './steps';
+import {
+  LINUX_TIPS_STEP_ID,
+  SETUP_STEP_ID,
+  type DeploymentProfileId,
+  type GuideBlock,
+  type GuideState,
+  type GuideStep,
+  type HostConfig,
+  type LinuxDistro,
+  type StepValidation,
 } from './types';
 
 function handoffSubstitutions(): Record<string, string> {
@@ -204,7 +206,6 @@ function renderStepViewContent(step: GuideStep, state: GuideState): string {
       <header class="guide-doc-header">
         <p class="splunk-eyebrow guide-step-phase">${escapeHtml(phase)}</p>
         <h1 class="guide-step-title">${escapeHtml(title)}</h1>
-        <span class="guide-read-badge">${escapeHtml(t('guide.readTime'))}</span>
       </header>
       <div class="step-meta">
         <div class="target-chips">${targets}</div>
@@ -234,15 +235,21 @@ function renderProgressBar(steps: GuideStep[], state: GuideState): string {
     </div>`;
 }
 
-function resolveCurrentStepId(steps: GuideStep[], state: GuideState): string {
-  if (state.currentStepId && steps.some((s) => s.id === state.currentStepId)) {
+function resolveCurrentStepId(installSteps: GuideStep[], state: GuideState): string {
+  const navIds = [SETUP_STEP_ID, ...installSteps.map((s) => s.id)];
+  if (state.currentStepId === LINUX_TIPS_STEP_ID) return SETUP_STEP_ID;
+  if (state.currentStepId && navIds.includes(state.currentStepId)) {
     return state.currentStepId;
   }
-  const firstIncomplete = steps.find((s) => !isStepComplete(state, s.id));
-  return firstIncomplete?.id ?? steps[0]?.id ?? '';
+  return SETUP_STEP_ID;
 }
 
-function renderGuideSetup(state: GuideState): string {
+function scrollGuideMainToTop(): void {
+  const main = document.querySelector('.guide-main-inner');
+  if (main) main.scrollTop = 0;
+}
+
+function renderGuideSetupFields(state: GuideState): string {
   const profileCards = DEPLOYMENT_PROFILES.map(
     (p) => `
     <label class="profile-card ${state.profileId === p.id ? 'selected' : ''}">
@@ -254,30 +261,56 @@ function renderGuideSetup(state: GuideState): string {
   ).join('');
 
   return `
-    <div class="guide-setup">
-      <button type="button" class="guide-setup-toggle" id="guide-setup-toggle" aria-expanded="${state.setupCollapsed ? 'false' : 'true'}">
-        ${escapeHtml(t('guide.setupToggle'))}
-        <span aria-hidden="true">${state.setupCollapsed ? '▸' : '▾'}</span>
-      </button>
-      <div class="guide-setup-body ${state.setupCollapsed ? 'is-collapsed' : ''}" id="guide-setup-body">
-        <div class="profile-grid">${profileCards}</div>
-        ${renderDistroSelector(state.linuxDistro)}
-        <div class="field"><label for="cfg-os-user">${escapeHtml(t('guide.osUser'))}</label><input id="cfg-os-user" value="${escapeHtml(state.hostConfig.osUser)}" /></div>
-        <div class="field"><label for="cfg-splunk-version">${escapeHtml(t('guide.splunkVersion'))}</label><input id="cfg-splunk-version" value="${escapeHtml(state.hostConfig.splunkVersion)}" /></div>
-        <div class="field"><label for="cfg-admin-password">${escapeHtml(t('guide.adminPassword'))}</label><input id="cfg-admin-password" type="password" value="${escapeHtml(state.hostConfig.adminPassword)}" autocomplete="off" /></div>
-        <div class="field"><label for="cfg-cluster-secret">${escapeHtml(t('guide.clusterSecret'))}</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>
-        ${renderHostConfig(state.profileId, state.hostConfig)}
-        <div class="checkbox-row">
-          <input type="checkbox" id="include-forwarders" ${state.includeForwarders ? 'checked' : ''} />
-          <label for="include-forwarders">${escapeHtml(t('guide.includeForwarders'))}</label>
-        </div>
-        <button type="button" id="copy-guide-md" class="btn-secondary" style="width:100%;margin-top:var(--space-3)">${escapeHtml(t('guide.copyMarkdown'))}</button>
+    <div class="guide-setup-main">
+      <div class="profile-grid">${profileCards}</div>
+      ${renderDistroSelector(state.linuxDistro)}
+      <div class="field"><label for="cfg-os-user">${escapeHtml(t('guide.osUser'))}</label><input id="cfg-os-user" value="${escapeHtml(state.hostConfig.osUser)}" /></div>
+      <div class="field"><label for="cfg-splunk-version">${escapeHtml(t('guide.splunkVersion'))}</label><input id="cfg-splunk-version" value="${escapeHtml(state.hostConfig.splunkVersion)}" /></div>
+      <div class="field"><label for="cfg-admin-password">${escapeHtml(t('guide.adminPassword'))}</label><input id="cfg-admin-password" type="password" value="${escapeHtml(state.hostConfig.adminPassword)}" autocomplete="off" /></div>
+      <div class="field"><label for="cfg-cluster-secret">${escapeHtml(t('guide.clusterSecret'))}</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>
+      ${renderHostConfig(state.profileId, state.hostConfig)}
+      <div class="checkbox-row">
+        <input type="checkbox" id="include-forwarders" ${state.includeForwarders ? 'checked' : ''} />
+        <label for="include-forwarders">${escapeHtml(t('guide.includeForwarders'))}</label>
       </div>
+      <button type="button" id="copy-guide-md" class="btn-secondary" style="width:100%;margin-top:var(--space-3)">${escapeHtml(t('guide.copyMarkdown'))}</button>
     </div>`;
 }
 
-function renderGuideStepNav(steps: GuideStep[], state: GuideState, currentId: string): string {
-  const items = steps
+function renderSetupStepContent(state: GuideState): string {
+  const linuxStep = getLinuxTipsStep();
+  const linuxTitle = t(stepTitleKey(LINUX_TIPS_STEP_ID));
+  const linuxBlocks =
+    linuxStep?.blocks.map((b) => renderBlock(b, state.hostConfig, state.linuxDistro)).join('') ?? '';
+  const linuxDocs = linuxStep ? renderDocLinks(linuxStep.docLinks) : '';
+  const linuxValidations = linuxStep ? renderValidations(linuxStep, state) : '';
+
+  return `
+    <article class="guide-step-view guide-setup-step" data-step-id="${SETUP_STEP_ID}" id="step-${SETUP_STEP_ID}">
+      <header class="guide-doc-header">
+        <h1 class="guide-step-title">${escapeHtml(t('guide.stepSetupTitle'))}</h1>
+      </header>
+      ${renderGuideSetupFields(state)}
+      <hr class="guide-section-divider" />
+      <section class="guide-linux-tips-section">
+        <h2 class="guide-section-title">${escapeHtml(linuxTitle)}</h2>
+        <div class="doc-links">${linuxDocs}</div>
+        ${linuxBlocks}
+        ${linuxValidations}
+      </section>
+    </article>`;
+}
+
+function renderGuideStepNav(installSteps: GuideStep[], state: GuideState, currentId: string): string {
+  const setupItem = `
+    <li class="guide-step-nav-item">
+      <button type="button" class="guide-step-nav-link ${currentId === SETUP_STEP_ID ? 'is-active' : ''}" data-step-nav="${SETUP_STEP_ID}">
+        <span class="guide-step-nav-marker">${currentId === SETUP_STEP_ID ? '●' : '○'}</span>
+        <span>${escapeHtml(t('guide.stepSetupTitle'))}</span>
+      </button>
+    </li>`;
+
+  const items = installSteps
     .map((s) => {
       const done = isStepComplete(state, s.id);
       const active = s.id === currentId;
@@ -292,17 +325,24 @@ function renderGuideStepNav(steps: GuideStep[], state: GuideState, currentId: st
       </li>`;
     })
     .join('');
-  return `<ul class="guide-step-nav" role="navigation" aria-label="Steps">${items}</ul>`;
+  return `<ul class="guide-step-nav" role="navigation" aria-label="Steps">${setupItem}${items}</ul>`;
 }
 
-function renderGuideFooter(steps: GuideStep[], currentId: string): string {
-  const idx = steps.findIndex((s) => s.id === currentId);
+function navStepIds(installSteps: GuideStep[]): string[] {
+  return [SETUP_STEP_ID, ...installSteps.map((s) => s.id)];
+}
+
+function renderGuideFooter(installSteps: GuideStep[], currentId: string): string {
+  const ids = navStepIds(installSteps);
+  const idx = ids.indexOf(currentId);
   const hasPrev = idx > 0;
-  const hasNext = idx >= 0 && idx < steps.length - 1;
+  const hasNext = idx >= 0 && idx < ids.length - 1;
+  const counterCurrent = idx >= 0 ? idx : 0;
+  const counterTotal = installSteps.length;
   return `
     <div class="guide-step-footer-nav">
       <button type="button" class="btn-nav" id="guide-prev-step" ${hasPrev ? '' : 'disabled'}>${escapeHtml(t('guide.navPrevious'))}</button>
-      <span class="guide-step-counter">${escapeHtml(t('guide.stepCounter', { current: idx + 1, total: steps.length }))}</span>
+      <span class="guide-step-counter">${escapeHtml(t('guide.stepCounter', { current: counterCurrent, total: counterTotal }))}</span>
       <button type="button" class="btn-nav btn-nav--primary" id="guide-next-step" ${hasNext ? '' : 'disabled'}>${escapeHtml(t('guide.navNext'))}</button>
     </div>`;
 }
@@ -351,9 +391,12 @@ function buildMarkdown(state: GuideState): string {
   return md;
 }
 
-function renderStepsHtml(steps: GuideStep[], state: GuideState, currentStepId: string): string {
-  const step = steps.find((s) => s.id === currentStepId) ?? steps[0];
-  if (!step) return '';
+function renderStepsHtml(installSteps: GuideStep[], state: GuideState, currentStepId: string): string {
+  if (currentStepId === SETUP_STEP_ID) {
+    return renderSetupStepContent(state);
+  }
+  const step = installSteps.find((s) => s.id === currentStepId) ?? installSteps[0];
+  if (!step) return renderSetupStepContent(state);
   return renderStepViewContent(step, state);
 }
 
@@ -372,6 +415,11 @@ function bindCopyButtons(container: HTMLElement): void {
   });
 }
 
+function findGuideStep(state: GuideState, stepId: string): GuideStep | undefined {
+  if (stepId === LINUX_TIPS_STEP_ID) return getLinuxTipsStep();
+  return filterNavigableSteps(state.profileId, state.includeForwarders).find((s) => s.id === stepId);
+}
+
 function bindValidationHandlers(container: HTMLElement): void {
   container.querySelectorAll('.validation-cb').forEach((cb) => {
     cb.addEventListener('change', () => {
@@ -381,9 +429,9 @@ function bindValidationHandlers(container: HTMLElement): void {
       let state = loadGuideState();
       state = toggleValidationCheck(state, stepId, validationId, el.checked);
       saveGuideState(state);
-      const step = filterStepsForProfile(state.profileId, state.includeForwarders).find((s) => s.id === stepId);
+      const step = findGuideStep(state, stepId);
       if (!step) return;
-      const stepEl = container.querySelector(`#step-${stepId}`);
+      const stepEl = container.querySelector(`#step-${stepId}, #step-${SETUP_STEP_ID}`);
       const completeCb = stepEl?.querySelector('.step-done-cb') as HTMLInputElement | null;
       const canComplete = validationsComplete(state, step);
       if (completeCb) {
@@ -401,9 +449,9 @@ function bindValidationHandlers(container: HTMLElement): void {
       let state = loadGuideState();
       state = setSkipValidation(state, stepId, el.checked);
       saveGuideState(state);
-      const step = filterStepsForProfile(state.profileId, state.includeForwarders).find((s) => s.id === stepId);
+      const step = findGuideStep(state, stepId);
       if (!step) return;
-      const stepEl = container.querySelector(`#step-${stepId}`);
+      const stepEl = container.querySelector(`#step-${stepId}, #step-${SETUP_STEP_ID}`);
       const completeCb = stepEl?.querySelector('.step-done-cb') as HTMLInputElement | null;
       const canComplete = validationsComplete(state, step);
       if (completeCb) {
@@ -419,7 +467,7 @@ function bindValidationHandlers(container: HTMLElement): void {
       const stepId = (btn as HTMLButtonElement).dataset.stepId!;
       const validationId = (btn as HTMLButtonElement).dataset.validationId!;
       const state = loadGuideState();
-      const step = filterStepsForProfile(state.profileId, state.includeForwarders).find((s) => s.id === stepId);
+      const step = findGuideStep(state, stepId);
       const validation = step?.validations.find((v) => v.id === validationId);
       if (!validation?.expectPattern) return;
       const textarea = container.querySelector(
@@ -470,35 +518,38 @@ function renderHandoffBanner(state: GuideState): string {
 }
 
 function renderGuideContent(container: HTMLElement, state: GuideState, stepIdOverride?: string | null): void {
-  const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-  const currentStepId = stepIdOverride ?? resolveCurrentStepId(steps, state);
+  const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+  const currentStepId = stepIdOverride ?? resolveCurrentStepId(installSteps, state);
   const stateWithStep = { ...state, currentStepId };
-  const currentStep = steps.find((s) => s.id === currentStepId);
-  const phaseLabel = currentStep ? t(stepPhaseKey(currentStep.id)) : '';
+  const breadcrumbLabel =
+    currentStepId === SETUP_STEP_ID
+      ? t('guide.stepSetupTitle')
+      : installSteps.find((s) => s.id === currentStepId)
+        ? t(stepPhaseKey(currentStepId))
+        : '';
 
   container.innerHTML = `
     ${renderNav('guide')}
     <div class="guide-shell app-viewport">
       <div class="guide-mobile-bar">
         <button type="button" class="guide-drawer-toggle" id="guide-drawer-toggle" aria-label="${escapeHtml(t('guide.menuToggle'))}">☰</button>
-        <div class="guide-mobile-progress">${renderProgressBar(steps, stateWithStep)}</div>
+        <div class="guide-mobile-progress">${renderProgressBar(installSteps, stateWithStep)}</div>
       </div>
       <div class="guide-sidebar-backdrop" id="guide-sidebar-backdrop"></div>
       <div class="guide-body">
         <aside class="guide-sidebar" id="guide-sidebar">
-          ${renderGuideSetup(stateWithStep)}
           <div class="guide-sidebar-section-label">${escapeHtml(t('guide.sidebarSteps'))}</div>
-          ${renderGuideStepNav(steps, stateWithStep, currentStepId)}
+          ${renderGuideStepNav(installSteps, stateWithStep, currentStepId)}
         </aside>
         <div class="guide-main">
-          ${renderGuideBreadcrumb(phaseLabel)}
+          ${renderGuideBreadcrumb(breadcrumbLabel)}
           ${renderHandoffBanner(stateWithStep)}
           <div class="guide-main-inner">
             <div class="guide-prose prose-measure" id="guide-steps">
-              ${renderStepsHtml(steps, stateWithStep, currentStepId)}
+              ${renderStepsHtml(installSteps, stateWithStep, currentStepId)}
             </div>
           </div>
-          ${renderGuideFooter(steps, currentStepId)}
+          ${renderGuideFooter(installSteps, currentStepId)}
         </div>
       </div>
     </div>
@@ -522,15 +573,14 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
       skipValidationSteps: stored.skipValidationSteps,
       completedSteps: stored.completedSteps,
       currentStepId: stored.currentStepId ?? initialState.currentStepId,
-      setupCollapsed: stored.setupCollapsed ?? initialState.setupCollapsed,
       showCompletedSteps: stored.showCompletedSteps,
     };
   };
 
   const refresh = (stepId?: string | null) => {
     const state = readState();
-    const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-    const nextStepId = stepId ?? resolveCurrentStepId(steps, state);
+    const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+    const nextStepId = stepId ?? resolveCurrentStepId(installSteps, state);
     const next = { ...state, currentStepId: nextStepId };
     saveGuideState(next);
     renderGuideContent(container, next, nextStepId);
@@ -540,6 +590,7 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
     const state = readState();
     saveGuideState({ ...state, currentStepId: stepId });
     renderGuideContent(container, { ...state, currentStepId: stepId }, stepId);
+    scrollGuideMainToTop();
     closeDrawer();
   };
 
@@ -556,14 +607,6 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
   container.querySelector('#guide-drawer-toggle')?.addEventListener('click', openDrawer);
   container.querySelector('#guide-sidebar-backdrop')?.addEventListener('click', closeDrawer);
 
-  container.querySelector('#guide-setup-toggle')?.addEventListener('click', () => {
-    const state = readState();
-    const collapsed = !state.setupCollapsed;
-    saveGuideState({ ...state, setupCollapsed: collapsed });
-    document.getElementById('guide-setup-body')?.classList.toggle('is-collapsed', collapsed);
-    document.getElementById('guide-setup-toggle')?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-  });
-
   container.querySelectorAll('input[name="profile"]').forEach((el) => {
     el.addEventListener('change', () => refresh(null));
   });
@@ -576,9 +619,9 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
     el.addEventListener('change', () => {
       const state = readState();
       saveGuideState(state);
-      const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-      const currentId = resolveCurrentStepId(steps, state);
-      document.getElementById('guide-steps')!.innerHTML = renderStepsHtml(steps, state, currentId);
+      const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+      const currentId = resolveCurrentStepId(installSteps, state);
+      document.getElementById('guide-steps')!.innerHTML = renderStepsHtml(installSteps, state, currentId);
       bindStepHandlers(container);
       bindCopyButtons(container);
       bindValidationHandlers(container);
@@ -593,16 +636,18 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
 
   container.querySelector('#guide-prev-step')?.addEventListener('click', () => {
     const state = readState();
-    const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-    const idx = steps.findIndex((s) => s.id === resolveCurrentStepId(steps, state));
-    if (idx > 0) goToStep(steps[idx - 1].id);
+    const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+    const ids = navStepIds(installSteps);
+    const idx = ids.indexOf(resolveCurrentStepId(installSteps, state));
+    if (idx > 0) goToStep(ids[idx - 1]);
   });
 
   container.querySelector('#guide-next-step')?.addEventListener('click', () => {
     const state = readState();
-    const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-    const idx = steps.findIndex((s) => s.id === resolveCurrentStepId(steps, state));
-    if (idx >= 0 && idx < steps.length - 1) goToStep(steps[idx + 1].id);
+    const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+    const ids = navStepIds(installSteps);
+    const idx = ids.indexOf(resolveCurrentStepId(installSteps, state));
+    if (idx >= 0 && idx < ids.length - 1) goToStep(ids[idx + 1]);
   });
 
   bindStepHandlers(container);
@@ -627,19 +672,20 @@ function bindStepHandlers(container: HTMLElement): void {
     cb.addEventListener('change', () => {
       const id = (cb as HTMLInputElement).dataset.stepId!;
       const current = loadGuideState();
-      const steps = filterStepsForProfile(current.profileId, current.includeForwarders);
-      const step = steps.find((s) => s.id === id);
+      const installSteps = filterNavigableSteps(current.profileId, current.includeForwarders);
+      const step = installSteps.find((s) => s.id === id);
       if ((cb as HTMLInputElement).checked && step && !validationsComplete(current, step)) {
         (cb as HTMLInputElement).checked = false;
         return;
       }
       let next = toggleStepComplete(current, id, (cb as HTMLInputElement).checked);
       if ((cb as HTMLInputElement).checked) {
-        const nextId = nextIncompleteStepId(steps, next, id);
+        const nextId = nextIncompleteStepId(installSteps, next, id);
         if (nextId) next = { ...next, currentStepId: nextId };
       }
       saveGuideState(next);
       renderGuideContent(container, next, next.currentStepId);
+      scrollGuideMainToTop();
     });
   });
 }
@@ -650,8 +696,8 @@ export function renderGuide(container: HTMLElement, onLocaleChange?: () => void)
     state = { ...state, hostConfig: defaultHostConfig() };
   }
   state = resolveInitialProfile(state);
-  const steps = filterStepsForProfile(state.profileId, state.includeForwarders);
-  state = { ...state, currentStepId: resolveCurrentStepId(steps, state) };
+  const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
+  state = { ...state, currentStepId: resolveCurrentStepId(installSteps, state) };
   saveGuideState(state);
   renderGuideContent(container, state);
   bindNavEvents(container, onLocaleChange);

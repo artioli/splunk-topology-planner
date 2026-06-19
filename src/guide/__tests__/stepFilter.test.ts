@@ -1,19 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { DEPLOYMENT_PROFILES } from '../profiles';
-import { ALL_GUIDE_STEPS, filterStepsForProfile } from '../steps';
+import { ALL_GUIDE_STEPS, filterNavigableSteps, filterStepsForProfile } from '../steps';
 
 describe('stepFilter', () => {
+  it('navigable steps exclude linux-tips (merged into Step 0)', () => {
+    const all = filterStepsForProfile('single', false);
+    const nav = filterNavigableSteps('single', false);
+    expect(all.some((s) => s.id === 'linux-tips')).toBe(true);
+    expect(nav.some((s) => s.id === 'linux-tips')).toBe(false);
+  });
+
   it('single profile excludes cluster steps', () => {
-    const steps = filterStepsForProfile('single', false);
+    const steps = filterNavigableSteps('single', false);
     const ids = steps.map((s) => s.id);
-    expect(ids).toContain('linux-tips');
+    expect(ids).not.toContain('linux-tips');
     expect(ids).toContain('single-roles');
     expect(ids).not.toContain('ic-manager');
     expect(ids).not.toContain('shc-members');
   });
 
   it('distributed_ic includes cluster but not SHC deployer', () => {
-    const steps = filterStepsForProfile('distributed_ic', false);
+    const steps = filterNavigableSteps('distributed_ic', false);
     const ids = steps.map((s) => s.id);
     expect(ids).toContain('ic-manager');
     expect(ids).toContain('ic-peers');
@@ -21,7 +28,7 @@ describe('stepFilter', () => {
   });
 
   it('distributed_ic_shc includes SHC steps', () => {
-    const steps = filterStepsForProfile('distributed_ic_shc', false);
+    const steps = filterNavigableSteps('distributed_ic_shc', false);
     const ids = steps.map((s) => s.id);
     expect(ids).toContain('shc-deployer');
     expect(ids).toContain('shc-members');
@@ -29,8 +36,8 @@ describe('stepFilter', () => {
   });
 
   it('forwarder appendix only when enabled', () => {
-    const off = filterStepsForProfile('distributed_ic', false);
-    const on = filterStepsForProfile('distributed_ic', true);
+    const off = filterNavigableSteps('distributed_ic', false);
+    const on = filterNavigableSteps('distributed_ic', true);
     expect(off.some((s) => s.id === 'uf-install')).toBe(false);
     expect(on.some((s) => s.id === 'uf-install')).toBe(true);
   });

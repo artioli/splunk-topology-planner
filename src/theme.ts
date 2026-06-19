@@ -1,6 +1,18 @@
 const THEME_KEY = 'splunk-planner-theme';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
+export type ResolvedTheme = 'light' | 'dark';
+
+function resolveSystemTheme(): ResolvedTheme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function resolveTheme(mode: ThemeMode): ResolvedTheme {
+  return mode === 'system' ? resolveSystemTheme() : mode;
+}
+
+let mediaQuery: MediaQueryList | null = null;
+let mediaListener: ((e: MediaQueryListEvent) => void) | null = null;
 
 export function getStoredTheme(): ThemeMode {
   try {
@@ -13,7 +25,8 @@ export function getStoredTheme(): ThemeMode {
 }
 
 export function applyTheme(mode: ThemeMode): void {
-  document.documentElement.dataset.theme = mode;
+  document.documentElement.dataset.themePreference = mode;
+  document.documentElement.dataset.theme = resolveTheme(mode);
   try {
     localStorage.setItem(THEME_KEY, mode);
   } catch {
@@ -23,6 +36,17 @@ export function applyTheme(mode: ThemeMode): void {
 
 export function initTheme(): void {
   applyTheme(getStoredTheme());
+
+  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mediaListener) {
+    mediaQuery.removeEventListener('change', mediaListener);
+  }
+  mediaListener = () => {
+    if (getStoredTheme() === 'system') {
+      document.documentElement.dataset.theme = resolveSystemTheme();
+    }
+  };
+  mediaQuery.addEventListener('change', mediaListener);
 }
 
 export function cycleTheme(): ThemeMode {

@@ -16,6 +16,17 @@
   max-width: min(90ch, 100%);
 }
 
+.guide-prose.prose-measure {
+  width: 100%;
+  max-width: min(100%, max(75ch, 55vw));
+}
+
+@media (min-width: 1440px) {
+  .guide-prose.prose-measure {
+    max-width: min(100%, max(85ch, 65vw));
+  }
+}
+
 @media (min-width: 1920px) {
   .app-viewport--padded {
     padding-inline: clamp(1.5rem, 3vw, 4rem);

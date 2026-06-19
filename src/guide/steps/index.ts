@@ -1,5 +1,5 @@
 import { t } from '../../i18n';
-import type { DeploymentProfileId, GuideStep } from '../types';
+import { LINUX_TIPS_STEP_ID, type DeploymentProfileId, type GuideStep } from '../types';
 import { distributedNcSteps, singleServerSteps } from './distributedNc';
 import { forwarderAppendixSteps } from './forwarderAppendix';
 import { indexerClusterSteps } from './indexerCluster';
@@ -38,6 +38,20 @@ export function filterStepsForProfile(
     if (step.optional && !includeForwarders) return false;
     return true;
   });
+}
+
+/** Install steps shown in sidebar / prev-next (linux-tips merged into Step 0). */
+export function filterNavigableSteps(
+  profileId: DeploymentProfileId,
+  includeForwarders: boolean,
+): GuideStep[] {
+  return filterStepsForProfile(profileId, includeForwarders).filter(
+    (step) => step.id !== LINUX_TIPS_STEP_ID,
+  );
+}
+
+export function getLinuxTipsStep(): GuideStep | undefined {
+  return ALL_GUIDE_STEPS.find((step) => step.id === LINUX_TIPS_STEP_ID);
 }
 
 export function targetLabel(target: string): string {

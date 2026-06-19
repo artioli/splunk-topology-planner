@@ -45,6 +45,7 @@ add('guide.markComplete', 'Mark step complete', 'Marcar passo como concluído', 
 add('guide.navPrevious', 'Previous', 'Anterior', 'Anterior');
 add('guide.navNext', 'Next', 'Próximo', 'Siguiente');
 add('guide.setupToggle', 'Deployment setup', 'Configuração da implantação', 'Configuración de implementación');
+add('guide.stepSetupTitle', 'Deployment setup', 'Configuração da implantação', 'Configuración de implementación');
 add('guide.stepCounter', 'Step {current} of {total}', 'Passo {current} de {total}', 'Paso {current} de {total}');
 add('home.title', 'Splunk On-Prem Topology Planner', 'Planejador de topologia Splunk on-prem', 'Planificador de topología Splunk on-prem');
 add('home.subtitle', 'Plan on-premises Splunk Enterprise deployments with SVA-aligned sizing, storage estimates, and a step-by-step Linux deployment guide.', 'Planeje implantações Splunk Enterprise on-premises com dimensionamento alinhado à SVA, estimativas de armazenamento e um guia Linux passo a passo.', 'Planifique implementaciones Splunk Enterprise on-premises con dimensionamiento alineado a SVA, estimaciones de almacenamiento y una guía Linux paso a paso.');
@@ -61,12 +62,8 @@ add('home.eyebrow', 'Splunk Enterprise · On-premises', 'Splunk Enterprise · On
 add('home.contentsTitle', 'Contents', 'Conteúdo', 'Contenido');
 add('home.calloutText', 'Start with the Topology Planner to size your deployment, then follow the step-by-step Deployment Guide for lab install commands.', 'Comece pelo Planejador de topologia para dimensionar sua implantação e siga o Guia de implantação passo a passo para comandos de instalação em laboratório.', 'Comience con el Planificador de topología para dimensionar su implementación y siga la Guía de implementación paso a paso para comandos de instalación en laboratorio.');
 add('home.calloutCta', 'Open Topology Planner', 'Abrir planejador', 'Abrir planificador');
-add('home.cardPlannerDuration', '5 minutes', '5 minutos', '5 minutos');
-add('home.cardGuideDuration', '15+ minutes', '15+ minutos', '15+ minutos');
-add('home.cardDocsDuration', 'Reference', 'Referência', 'Referencia');
 add('guide.breadcrumbHome', 'Home', 'Início', 'Inicio');
 add('guide.breadcrumbGuide', 'Deployment Guide', 'Guia de implantação', 'Guía de implementación');
-add('guide.readTime', '5 min read', '5 min de leitura', '5 min de lectura');
 add('guide.sidebarSteps', 'Steps', 'Passos', 'Pasos');
 add('guide.menuToggle', 'Open navigation menu', 'Abrir menu de navegação', 'Abrir menú de navegación');
 add('guide.handoff', 'Planner handoff: {svaCode} → {profileLabel}', 'Handoff do planejador: {svaCode} → {profileLabel}', 'Transferencia del planificador: {svaCode} → {profileLabel}');

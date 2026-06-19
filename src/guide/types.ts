@@ -95,6 +95,9 @@ export interface DeploymentProfile {
   splunkHostCount: number;
 }
 
+export const SETUP_STEP_ID = 'deployment-setup';
+export const LINUX_TIPS_STEP_ID = 'linux-tips';
+
 export interface GuideState {
   profileId: DeploymentProfileId;
   includeForwarders: boolean;
@@ -105,5 +108,4 @@ export interface GuideState {
   validatedChecks: Record<string, string[]>;
   skipValidationSteps: string[];
   currentStepId: string | null;
-  setupCollapsed: boolean;
 }

@@ -24,21 +24,18 @@ export function renderHome(container: HTMLElement, onLocaleChange?: () => void):
         <div class="home-cards">
           <a href="#planner" class="home-card">
             <span class="home-card-marker" aria-hidden="true"></span>
-            <span class="home-card-meta">${escapeHtml(t('home.cardPlannerDuration'))}</span>
             <h2>${escapeHtml(t('home.cardPlannerTitle'))}</h2>
             <p>${escapeHtml(t('home.cardPlannerDesc'))}</p>
             <span class="home-card-cta">${escapeHtml(t('home.cardPlannerCta'))} →</span>
           </a>
           <a href="#guide" class="home-card">
             <span class="home-card-marker" aria-hidden="true"></span>
-            <span class="home-card-meta">${escapeHtml(t('home.cardGuideDuration'))}</span>
             <h2>${escapeHtml(t('home.cardGuideTitle'))}</h2>
             <p>${escapeHtml(t('home.cardGuideDesc'))}</p>
             <span class="home-card-cta">${escapeHtml(t('home.cardGuideCta'))} →</span>
           </a>
           <a href="${DOC_LINKS.sva}" target="_blank" rel="noopener noreferrer" class="home-card">
             <span class="home-card-marker" aria-hidden="true"></span>
-            <span class="home-card-meta">${escapeHtml(t('home.cardDocsDuration'))}</span>
             <h2>${escapeHtml(t('home.cardDocsTitle'))}</h2>
             <p>${escapeHtml(t('home.cardDocsDesc'))}</p>
             <span class="home-card-cta">${escapeHtml(t('home.cardDocsCta'))} →</span>

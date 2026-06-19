@@ -527,8 +527,14 @@ function bindJumpToResults(): void {
 
 function bindPanelCollapse(): void {
   document.querySelectorAll('.panel-header').forEach((header) => {
+    const panel = header.parentElement;
+    const syncExpanded = (): void => {
+      header.setAttribute('aria-expanded', panel?.classList.contains('collapsed') ? 'false' : 'true');
+    };
+    syncExpanded();
     header.addEventListener('click', () => {
-      header.parentElement?.classList.toggle('collapsed');
+      panel?.classList.toggle('collapsed');
+      syncExpanded();
     });
   });
 }
@@ -560,7 +566,7 @@ function renderPlannerSectionNavLinks(): string {
   return `<ul class="planner-section-nav-list">${sections
     .map(
       (s) =>
-        `<li><a href="#${s.id}" class="planner-section-nav-link" data-section="${s.id}">${escapeHtml(t(s.labelKey))}</a></li>`,
+        `<li class="planner-section-nav-item"><button type="button" class="planner-section-nav-link" data-section="${s.id}">${escapeHtml(t(s.labelKey))}</button></li>`,
     )
     .join('')}</ul>`;
 }
@@ -588,7 +594,10 @@ function bindPlannerSectionNav(): void {
       e.preventDefault();
       const id = (link as HTMLElement).dataset.section;
       if (!id) return;
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const panel = document.getElementById(id);
+      panel?.classList.remove('collapsed');
+      panel?.querySelector('.panel-header')?.setAttribute('aria-expanded', 'true');
+      panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       document.querySelectorAll('.planner-section-nav-link, .planner-section-chip').forEach((el) => {
         el.classList.toggle('is-active', (el as HTMLElement).dataset.section === id);
       });
@@ -676,6 +685,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
         </section>
 
         <section class="panel" id="panel-premium">
+          <div class="panel-header">${escapeHtml(t('planner.panels.premium'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="enterpriseSecurity" ${n.enterpriseSecurity ? 'checked' : ''} />
@@ -690,6 +700,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
         </section>
 
         <section class="panel" id="panel-topology">
+          <div class="panel-header">${escapeHtml(t('planner.panels.topology'))}</div>
           <div class="panel-body">
             <div class="checkbox-row">
               <input type="checkbox" id="singleServerDeployment" ${n.singleServerDeployment ? 'checked' : ''} />
@@ -807,6 +818,7 @@ function renderApp(container: HTMLElement, initial: PlannerInputs): void {
         </section>
 
         <section class="panel" id="panel-environment">
+          <div class="panel-header">${escapeHtml(t('planner.panels.environment'))}</div>
           <div class="panel-body">
             <div class="field">
               <label for="environment">${escapeHtml(t('planner.field.environment'))}</label>
