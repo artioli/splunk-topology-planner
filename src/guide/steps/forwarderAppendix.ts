@@ -44,6 +44,16 @@ export const forwarderAppendixSteps: GuideStep[] = [
       {
         type: 'commands',
         contentKey: 'steps.uf-ds-poll.blocks.configure',
+        profiles: ['single', 'distributed_nc'],
+        commands: [
+          '/opt/splunkforwarder/bin/splunk set deploy-poll {{MGMT_IP}}:8089',
+          '/opt/splunkforwarder/bin/splunk restart',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.uf-ds-poll.blocks.configure',
+        profiles: ['distributed_ic', 'distributed_ic_shc'],
         commands: [
           '/opt/splunkforwarder/bin/splunk set deploy-poll {{DS_IP}}:8089',
           '/opt/splunkforwarder/bin/splunk restart',

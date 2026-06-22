@@ -50,6 +50,8 @@ export interface GuideBlock {
   copyAsBlock?: boolean;
   /** If set, block only renders for these distros. Omit = all distros. */
   distros?: LinuxDistro[];
+  /** If set, block only renders for these deployment profiles. Omit = all profiles in step. */
+  profiles?: DeploymentProfileId[];
 }
 
 export interface StepValidation {
@@ -59,6 +61,8 @@ export interface StepValidation {
   expectKey?: string;
   expectPattern?: string;
   optional?: boolean;
+  /** If set, validation only renders for these profiles. Omit = all profiles in step. */
+  profiles?: DeploymentProfileId[];
 }
 
 export interface GuideStep {

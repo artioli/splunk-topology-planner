@@ -15,8 +15,19 @@ describe('stepFilter', () => {
     const ids = steps.map((s) => s.id);
     expect(ids).not.toContain('linux-tips');
     expect(ids).toContain('single-roles');
+    expect(ids).toContain('validation-single');
+    expect(ids).not.toContain('validation');
     expect(ids).not.toContain('ic-manager');
     expect(ids).not.toContain('shc-members');
+  });
+
+  it('distributed_nc uses validation and standalone-nc indexes', () => {
+    const steps = filterNavigableSteps('distributed_nc', false);
+    const ids = steps.map((s) => s.id);
+    expect(ids).toContain('validation');
+    expect(ids).not.toContain('validation-single');
+    expect(ids).toContain('indexes-standalone-nc');
+    expect(ids).not.toContain('indexes-standalone');
   });
 
   it('distributed_ic includes cluster but not SHC deployer', () => {

@@ -11,6 +11,12 @@ export const linuxTipsSteps: GuideStep[] = [
       {
         type: 'text',
         contentKey: 'steps.linux-tips.blocks.intro',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
+      },
+      {
+        type: 'text',
+        contentKey: 'steps.linux-tips.blocks.intro-single',
+        profiles: ['single'],
       },
       {
         type: 'text',
@@ -37,6 +43,14 @@ export const linuxTipsSteps: GuideStep[] = [
         labelKey: 'steps.linux-tips.validations.disk.label',
         command: 'df -h',
         expectKey: 'steps.linux-tips.validations.disk.expect',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
+      },
+      {
+        id: 'disk',
+        labelKey: 'steps.linux-tips.validations.disk.label',
+        command: 'df -h',
+        expectKey: 'steps.linux-tips.validations.disk.expect-single',
+        profiles: ['single'],
       },
       {
         id: 'whoami',

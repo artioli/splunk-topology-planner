@@ -1,4 +1,5 @@
-import type { HostConfig, HostEntry } from './types';
+import { getProfile } from './profiles';
+import type { DeploymentProfileId, HostConfig, HostEntry } from './types';
 
 export const DEFAULT_OS_USER = 'splunkuser';
 export const DEFAULT_SPLUNK_VERSION = '10.4.0';
@@ -39,7 +40,17 @@ export function hostByRole(config: HostConfig, role: string): HostEntry | undefi
   return config.hosts.find((h) => h.role === role);
 }
 
-export function buildSubstitutionMap(config: HostConfig): Record<string, string> {
+function aliasHost(map: Record<string, string>, keys: string[], host: HostEntry): void {
+  for (const key of keys) {
+    map[key] = host.hostname;
+    map[key.replace('_HOST', '_IP')] = host.ip;
+  }
+}
+
+export function buildSubstitutionMap(
+  config: HostConfig,
+  profileId?: DeploymentProfileId,
+): Record<string, string> {
   const map: Record<string, string> = {
     OS_USER: config.osUser,
     ADMIN_PASSWORD: config.adminPassword,
@@ -64,10 +75,15 @@ export function buildSubstitutionMap(config: HostConfig): Record<string, string>
       map[`SH${n}_HOST`] = h.hostname;
     }
   }
-  const mgmt = hostByRole(config, 'mgmt') ?? hostByRole(config, 'combined');
+  const combined = hostByRole(config, 'combined');
+  const mgmt = hostByRole(config, 'mgmt') ?? combined;
   const cm = hostByRole(config, 'cm');
   const ds = hostByRole(config, 'ds');
   const deployer = hostByRole(config, 'deployer');
+  if (combined) {
+    map.COMBINED_IP = combined.ip;
+    map.COMBINED_HOST = combined.hostname;
+  }
   if (mgmt) {
     map.MGMT_IP = mgmt.ip;
     map.MGMT_HOST = mgmt.hostname;
@@ -93,7 +109,32 @@ export function buildSubstitutionMap(config: HostConfig): Record<string, string>
   if (idx2) map.IDX2_IP = idx2.ip;
   if (idx3) map.IDX3_IP = idx3.ip;
   if (sh1) map.SH1_IP = sh1.ip;
-  const idxIps = [idx1, idx2, idx3].filter(Boolean).map((h) => `${h!.ip}:9997`).join(',');
-  map.IDX_RECEIVING_LIST = idxIps || `${map.IDX1_IP ?? '10.0.0.11'}:9997`;
+
+  const profile = profileId ? getProfile(profileId) : undefined;
+  if (profile && mgmt) {
+    const roles = new Set(profile.hostRoles);
+    const idxRoles = profile.hostRoles.filter((r) => r.startsWith('idx'));
+    const idxIps = idxRoles
+      .map((r) => hostByRole(config, r))
+      .filter(Boolean)
+      .map((h) => `${h!.ip}:9997`);
+    if (profileId === 'single' && mgmt) {
+      map.IDX_RECEIVING_LIST = `${mgmt.ip}:9997`;
+    } else if (idxIps.length) {
+      map.IDX_RECEIVING_LIST = idxIps.join(',');
+    }
+
+    if (profileId === 'single') {
+      aliasHost(map, ['SH1_HOST', 'IDX1_HOST', 'DS_HOST'], mgmt);
+    }
+    if (profileId === 'distributed_nc' && !roles.has('ds')) {
+      aliasHost(map, ['DS_HOST'], mgmt);
+    }
+  }
+
+  if (!map.IDX_RECEIVING_LIST) {
+    const idxIps = [idx1, idx2, idx3].filter(Boolean).map((h) => `${h!.ip}:9997`);
+    map.IDX_RECEIVING_LIST = idxIps.join(',') || `${map.IDX1_IP ?? '10.0.0.11'}:9997`;
+  }
   return map;
 }

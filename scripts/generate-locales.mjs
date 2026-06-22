@@ -87,6 +87,9 @@ add('guide.validations.pass', 'Pass', 'Aprovado', 'Aprobado');
 add('guide.validations.fail', 'Fail', 'Falhou', 'Fallo');
 add('guide.validations.skipLab', 'Skip in lab', 'Ignorar no laboratório', 'Omitir en laboratorio');
 add('guide.validations.completeBlocked', 'Complete all validations before marking this step done.', 'Conclua todas as validações antes de marcar este passo como feito.', 'Complete todas las validaciones antes de marcar este paso como hecho.');
+add('guide.profileSelected', 'Profile selected: {profileLabel}', 'Perfil selecionado: {profileLabel}', 'Perfil seleccionado: {profileLabel}');
+add('guide.startOver', 'Start over', 'Recomeçar', 'Empezar de nuevo');
+add('guide.startOverConfirm', 'Clear all completed steps and validation checks and return to deployment setup?', 'Limpar todos os passos concluídos e validações e voltar à configuração da implantação?', '¿Borrar todos los pasos completados y validaciones y volver a la configuración de implementación?');
 
 // --- TARGETS ---
 const targets = {
@@ -126,12 +129,14 @@ add('profiles.distributed_ic_shc.svaHint', 'Maps to SVA C3', 'Corresponde a SVA 
 add('steps.linux-tips.phase', 'STEP 0', 'PASSO 0', 'PASO 0');
 add('steps.linux-tips.title', 'Linux quick tips', 'Dicas rápidas Linux', 'Consejos rápidos Linux');
 add('steps.linux-tips.blocks.intro', 'Run commands in order. Comments start with #. When a step says multi-exec, run the same commands on every listed host (MobaXterm multi-exec, parallel SSH, or repeat manually).', 'Execute os comandos por ordem. Comentários começam com #. Quando um passo indicar multi-exec, execute os mesmos comandos em cada host listado (MobaXterm multi-exec, SSH paralelo ou manualmente).', 'Ejecute los comandos en orden. Los comentarios empiezan con #. Cuando un paso indique multi-exec, ejecute los mismos comandos en cada host listado (MobaXterm multi-exec, SSH paralelo o manualmente).');
+add('steps.linux-tips.blocks.intro-single', 'Run commands in order on your single combined server. Comments start with #.', 'Execute os comandos por ordem no seu servidor combinado único. Comentários começam com #.', 'Ejecute los comandos en orden en su único servidor combinado. Los comentarios empiezan con #.');
 add('steps.linux-tips.blocks.vi-basics', '**vi basics:** `i` = insert, `Esc` = command mode, `:wq` = save and quit, `:q!` = quit without saving. `nano` is acceptable if you prefer.', '**Básicos do vi:** `i` = inserir, `Esc` = modo comando, `:wq` = guardar e sair, `:q!` = sair sem guardar. `nano` é aceitável se preferir.', '**Conceptos básicos de vi:** `i` = insertar, `Esc` = modo comando, `:wq` = guardar y salir, `:q!` = salir sin guardar. `nano` es aceptable si lo prefiere.');
 add('steps.linux-tips.blocks.disk-check', 'Check disk space before installing Splunk (need separate OS and data volumes on indexers):', 'Verifique espaço em disco antes de instalar Splunk (indexers precisam de volumes OS e dados separados):', 'Compruebe el espacio en disco antes de instalar Splunk (los indexers necesitan volúmenes OS y de datos separados):');
 add('steps.linux-tips.blocks.ssh-admin', 'SSH to a host as your admin user, then switch to the Splunk OS user when needed:', 'Ligue por SSH ao host como utilizador admin e mude para o utilizador OS Splunk quando necessário:', 'Conéctese por SSH al host como usuario admin y cambie al usuario OS Splunk cuando sea necesario:');
 add('steps.linux-tips.blocks.firewall-lab', 'Lab shortcut: some training environments disable firewalld entirely. In production, open only required TCP ports (8000, 8089, 9997, 8088, cluster ports) instead of disabling the firewall.', 'Atalho de laboratório: alguns ambientes de formação desativam o firewalld por completo. Em produção, abra apenas as portas TCP necessárias (8000, 8089, 9997, 8088, portas de cluster) em vez de desativar a firewall.', 'Atajo de laboratorio: algunos entornos de formación desactivan firewalld por completo. En producción, abra solo los puertos TCP necesarios (8000, 8089, 9997, 8088, puertos de cluster) en lugar de desactivar el firewall.');
 add('steps.linux-tips.validations.disk.label', 'Disk space check', 'Verificação de espaço em disco', 'Comprobación de espacio en disco');
 add('steps.linux-tips.validations.disk.expect', '`df -h` shows adequate free space; indexers have a dedicated data volume separate from `/`.', '`df -h` mostra espaço livre adequado; indexers têm volume de dados dedicado separado de `/`.', '`df -h` muestra espacio libre adecuado; los indexers tienen un volumen de datos dedicado separado de `/`.');
+add('steps.linux-tips.validations.disk.expect-single', '`df -h` shows adequate free space on the combined server.', '`df -h` mostra espaço livre adequado no servidor combinado.', '`df -h` muestra espacio libre adecuado en el servidor combinado.');
 add('steps.linux-tips.validations.whoami.label', 'Current user', 'Utilizador atual', 'Usuario actual');
 add('steps.linux-tips.validations.whoami.expect', '`whoami` returns your expected admin or Splunk OS user.', '`whoami` devolve o utilizador admin ou OS Splunk esperado.', '`whoami` devuelve el usuario admin u OS Splunk esperado.');
 
@@ -325,6 +330,8 @@ add('steps.indexes-standalone.blocks.paste-index', 'Paste into indexes.conf:', '
 add('steps.indexes-standalone.blocks.restart', 'Restart Splunk:', 'Reiniciar Splunk:', 'Reiniciar Splunk:');
 add('steps.indexes-standalone.validations.index.label', 'Index created', 'Index criado', 'Index creado');
 add('steps.indexes-standalone.validations.index.expect', 'Index `os` visible in Splunk Web or via CLI.', 'Index `os` visível no Splunk Web ou via CLI.', 'Index `os` visible en Splunk Web o vía CLI.');
+add('steps.indexes-standalone-nc.phase', 'STEP 9', 'PASSO 9', 'PASO 9');
+add('steps.indexes-standalone-nc.title', 'Create indexes (standalone / non-cluster)', 'Criar indexes (standalone / sem cluster)', 'Crear indexes (standalone / sin cluster)');
 
 // --- STEPS: tls-web, hec-tokens, validation ---
 add('steps.tls-web.phase', 'STEP 10', 'PASSO 10', 'PASO 10');
@@ -346,6 +353,7 @@ add('steps.hec-tokens.blocks.paste-http', 'Paste into inputs.conf:', 'Colar em i
 add('steps.hec-tokens.blocks.paste-token', 'Paste token stanza into inputs.conf:', 'Colar stanza de token em inputs.conf:', 'Pegar stanza de token en inputs.conf:');
 add('steps.hec-tokens.blocks.restart', 'Restart Splunk:', 'Reiniciar Splunk:', 'Reiniciar Splunk:');
 add('steps.hec-tokens.blocks.firewall', 'Open TCP/8088 in your firewall (`firewall-cmd` or cloud SG). Verify with `curl -k https://{{IDX1_HOST}}:8088/services/collector/health`.', 'Abra TCP/8088 na firewall (`firewall-cmd` ou cloud SG). Verifique com `curl -k https://{{IDX1_HOST}}:8088/services/collector/health`.', 'Abra TCP/8088 en el firewall (`firewall-cmd` o cloud SG). Verifique con `curl -k https://{{IDX1_HOST}}:8088/services/collector/health`.');
+add('steps.hec-tokens.blocks.firewall-single', 'Open TCP/8088 in your firewall (`firewall-cmd` or cloud SG). Verify with `curl -k https://{{MGMT_HOST}}:8088/services/collector/health`.', 'Abra TCP/8088 na firewall (`firewall-cmd` ou cloud SG). Verifique com `curl -k https://{{MGMT_HOST}}:8088/services/collector/health`.', 'Abra TCP/8088 en el firewall (`firewall-cmd` o cloud SG). Verifique con `curl -k https://{{MGMT_HOST}}:8088/services/collector/health`.');
 add('steps.hec-tokens.blocks.lab-warning', 'Lab: `enableSSL = 0` is possible but not recommended. Production: enable SSL, rotate tokens, and scope indexes/sourcetypes per token.', 'Laboratório: `enableSSL = 0` é possível mas não recomendado. Produção: ative SSL, rode tokens e limite indexes/sourcetypes por token.', 'Laboratorio: `enableSSL = 0` es posible pero no recomendado. Producción: active SSL, rote tokens y limite indexes/sourcetypes por token.');
 add('steps.hec-tokens.validations.hec.label', 'HEC health', 'Saúde HEC', 'Salud HEC');
 add('steps.hec-tokens.validations.hec.expect', 'HEC health endpoint returns success.', 'Endpoint de saúde HEC devolve sucesso.', 'Endpoint de salud HEC devuelve éxito.');
@@ -353,10 +361,16 @@ add('steps.hec-tokens.validations.hec.expect', 'HEC health endpoint returns succ
 add('steps.validation.phase', 'STEP 12', 'PASSO 12', 'PASO 12');
 add('steps.validation.title', 'Validation and health check', 'Validação e verificação de saúde', 'Validación y comprobación de salud');
 add('steps.validation.blocks.cli-checks', 'CLI checks:', 'Verificações CLI:', 'Comprobaciones CLI:');
+add('steps.validation.blocks.cli-checks-nc', 'CLI checks (non-cluster):', 'Verificações CLI (sem cluster):', 'Comprobaciones CLI (sin cluster):');
+add('steps.validation.blocks.cli-checks-ic', 'CLI checks (indexer cluster):', 'Verificações CLI (indexer cluster):', 'Comprobaciones CLI (indexer cluster):');
+add('steps.validation.blocks.cli-checks-ic-shc', 'CLI checks (indexer cluster + SHC + deployment server):', 'Verificações CLI (indexer cluster + SHC + deployment server):', 'Comprobaciones CLI (indexer cluster + SHC + deployment server):');
 add('steps.validation.blocks.mc-health', 'Splunk Web → **Settings → Monitoring Console → Health Check**. All checks should pass (hardware warnings may appear in undersized labs).', 'Splunk Web → **Settings → Monitoring Console → Health Check**. Todas as verificações devem passar (avisos de hardware podem aparecer em laboratórios subdimensionados).', 'Splunk Web → **Settings → Monitoring Console → Health Check**. Todas las comprobaciones deben pasar (avisos de hardware pueden aparecer en laboratorios subdimensionados).');
 add('steps.validation.blocks.internal-forward', 'Confirm internal logs are forwarding from management/search tiers to indexers when indexing is disabled on those nodes.', 'Confirme que logs internos são encaminhados de tiers management/search para indexers quando a indexação está desativada nesses nós.', 'Confirme que los logs internos se reenvían desde tiers management/search a indexers cuando la indexación está desactivada en esos nodos.');
 add('steps.validation.validations.health.label', 'Health Check', 'Health Check', 'Health Check');
 add('steps.validation.validations.health.expect', 'Monitoring Console Health Check shows no critical failures.', 'Monitoring Console Health Check sem falhas críticas.', 'Monitoring Console Health Check sin fallos críticos.');
+add('steps.validation-single.phase', 'STEP 12', 'PASSO 12', 'PASO 12');
+add('steps.validation-single.title', 'Validation and health check', 'Validação e verificação de saúde', 'Validación y comprobación de salud');
+add('steps.validation-single.blocks.cli-checks', 'CLI checks:', 'Verificações CLI:', 'Comprobaciones CLI:');
 
 // --- STEPS: uf-install, uf-ds-poll, indexer-discovery ---
 add('steps.uf-install.phase', 'APPENDIX A', 'APÊNDICE A', 'APÉNDICE A');

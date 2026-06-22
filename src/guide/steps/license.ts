@@ -17,6 +17,21 @@ export const licenseSteps: GuideStep[] = [
       {
         type: 'commands',
         contentKey: 'steps.license-manager.blocks.add-license',
+        profiles: ['single'],
+        commands: [
+          'ssh {{OS_USER}}@{{MGMT_IP}}',
+          '/opt/splunk/bin/splunk status',
+          'sudo mkdir -p /opt/license && sudo chown {{OS_USER}}:{{OS_USER}} /opt/license',
+          '# Copy your .license file to {{LICENSE_PATH}}',
+          '/opt/splunk/bin/splunk add licenses {{LICENSE_PATH}}',
+          '/opt/splunk/bin/splunk set servername {{MGMT_HOST}}-single',
+          '/opt/splunk/bin/splunk restart',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.license-manager.blocks.add-license',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
         commands: [
           'ssh {{OS_USER}}@{{MGMT_IP}}',
           '/opt/splunk/bin/splunk status',

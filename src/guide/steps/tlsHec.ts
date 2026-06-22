@@ -19,9 +19,19 @@ export const tlsHecSteps: GuideStep[] = [
       {
         type: 'commands',
         contentKey: 'steps.tls-web.blocks.self-signed',
+        profiles: ['single'],
         commands: [
           'cd $SPLUNK_HOME/etc/auth',
-          'sudo -u splunk openssl req -new -x509 -days 365 -nodes -out server.pem -keyout server.pem -subj "/CN={{SH1_HOST}}"',
+          'sudo -u {{OS_USER}} openssl req -new -x509 -days 365 -nodes -out server.pem -keyout server.pem -subj "/CN={{MGMT_HOST}}"',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.tls-web.blocks.self-signed',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
+        commands: [
+          'cd $SPLUNK_HOME/etc/auth',
+          'sudo -u {{OS_USER}} openssl req -new -x509 -days 365 -nodes -out server.pem -keyout server.pem -subj "/CN={{SH1_HOST}}"',
         ],
       },
       {
@@ -97,7 +107,13 @@ export const tlsHecSteps: GuideStep[] = [
       },
       {
         type: 'text',
+        contentKey: 'steps.hec-tokens.blocks.firewall-single',
+        profiles: ['single'],
+      },
+      {
+        type: 'text',
         contentKey: 'steps.hec-tokens.blocks.firewall',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
       },
       {
         type: 'warning',
@@ -108,8 +124,16 @@ export const tlsHecSteps: GuideStep[] = [
       {
         id: 'hec',
         labelKey: 'steps.hec-tokens.validations.hec.label',
+        command: 'curl -k https://{{MGMT_HOST}}:8088/services/collector/health',
+        expectKey: 'steps.hec-tokens.validations.hec.expect',
+        profiles: ['single'],
+      },
+      {
+        id: 'hec',
+        labelKey: 'steps.hec-tokens.validations.hec.label',
         command: 'curl -k https://{{IDX1_HOST}}:8088/services/collector/health',
         expectKey: 'steps.hec-tokens.validations.hec.expect',
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
       },
     ],
   },

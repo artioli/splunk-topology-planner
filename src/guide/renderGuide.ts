@@ -13,14 +13,16 @@ import { defaultHostConfig, hostByRole } from './hostDefaults';
 import {
   isStepComplete,
   loadGuideState,
+  resetGuideProgress,
   saveGuideState,
   setSkipValidation,
   toggleStepComplete,
   toggleValidationCheck,
+  validationVisible,
   validationsComplete,
 } from './progress';
 import { substitute, substituteCommands } from './substitute';
-import { filterNavigableSteps, filterStepsForProfile, getLinuxTipsStep, targetLabel } from './steps';
+import { filterNavigableSteps, filterStepsForProfile, getLinuxTipsStep, targetLabel, targetsForProfile } from './steps';
 import {
   LINUX_TIPS_STEP_ID,
   SETUP_STEP_ID,
@@ -41,9 +43,10 @@ function handoffSubstitutions(): Record<string, string> {
   };
 }
 
-function blockVisible(block: GuideBlock, distro: LinuxDistro): boolean {
-  if (!block.distros?.length) return true;
-  return block.distros.includes(distro);
+function blockVisible(block: GuideBlock, distro: LinuxDistro, profileId: DeploymentProfileId): boolean {
+  if (block.distros?.length && !block.distros.includes(distro)) return false;
+  if (block.profiles?.length && !block.profiles.includes(profileId)) return false;
+  return true;
 }
 
 function readHostConfigFromForm(state: GuideState): HostConfig {
@@ -72,16 +75,16 @@ function formatInlineMarkdown(text: string): string {
   return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
-function renderBlock(block: GuideBlock, config: HostConfig, distro: LinuxDistro): string {
-  if (!blockVisible(block, distro)) return '';
+function renderBlock(block: GuideBlock, config: HostConfig, distro: LinuxDistro, profileId: DeploymentProfileId): string {
+  if (!blockVisible(block, distro, profileId)) return '';
   const extra = handoffSubstitutions();
   const raw = t(block.contentKey);
-  const content = substitute(raw, config, extra);
+  const content = substitute(raw, config, extra, profileId);
   if (block.type === 'warning') {
     return `<div class="guide-warning">${formatInlineMarkdown(escapeHtml(content))}</div>`;
   }
   if (block.type === 'commands') {
-    const cmds = substituteCommands(block.commands ?? [], config, extra);
+    const cmds = substituteCommands(block.commands ?? [], config, extra, profileId);
     const intro = content ? `<p>${formatInlineMarkdown(escapeHtml(content))}</p>` : '';
     if (block.copyAsBlock) {
       const text = cmds.join('\n');
@@ -138,11 +141,12 @@ function renderDocLinks(links: GuideStep['docLinks']): string {
 }
 
 function renderValidationRow(v: StepValidation, step: GuideStep, state: GuideState): string {
+  if (!validationVisible(v, state.profileId)) return '';
   const extra = handoffSubstitutions();
   const checked = (state.validatedChecks[step.id] ?? []).includes(v.id);
-  const label = substitute(t(v.labelKey), state.hostConfig, extra);
-  const expect = v.expectKey ? substitute(t(v.expectKey), state.hostConfig, extra) : '';
-  const cmd = v.command ? substitute(v.command, state.hostConfig, extra) : '';
+  const label = substitute(t(v.labelKey), state.hostConfig, extra, state.profileId);
+  const expect = v.expectKey ? substitute(t(v.expectKey), state.hostConfig, extra, state.profileId) : '';
+  const cmd = v.command ? substitute(v.command, state.hostConfig, extra, state.profileId) : '';
   const cmdRow = cmd
     ? `<div class="command-row validation-cmd"><pre class="command-block">${escapeHtml(cmd)}</pre><button type="button" class="btn-copy">${escapeHtml(t('guide.copy'))}</button></div>`
     : '';
@@ -198,8 +202,10 @@ function renderStepViewContent(step: GuideStep, state: GuideState): string {
   const done = isStepComplete(state, step.id);
   const phase = t(stepPhaseKey(step.id));
   const title = t(stepTitleKey(step.id));
-  const targets = step.targets.map((tg) => `<span class="target-chip">${escapeHtml(targetLabel(tg))}</span>`).join('');
-  const blocks = step.blocks.map((b) => renderBlock(b, state.hostConfig, state.linuxDistro)).join('');
+  const targets = targetsForProfile(step.targets, state.profileId)
+    .map((tg) => `<span class="target-chip">${escapeHtml(targetLabel(tg))}</span>`)
+    .join('');
+  const blocks = step.blocks.map((b) => renderBlock(b, state.hostConfig, state.linuxDistro, state.profileId)).join('');
   const canComplete = validationsComplete(state, step);
   return `
     <article class="guide-step-view" data-step-id="${step.id}" id="step-${step.id}">
@@ -267,7 +273,7 @@ function renderGuideSetupFields(state: GuideState): string {
       <div class="field"><label for="cfg-os-user">${escapeHtml(t('guide.osUser'))}</label><input id="cfg-os-user" value="${escapeHtml(state.hostConfig.osUser)}" /></div>
       <div class="field"><label for="cfg-splunk-version">${escapeHtml(t('guide.splunkVersion'))}</label><input id="cfg-splunk-version" value="${escapeHtml(state.hostConfig.splunkVersion)}" /></div>
       <div class="field"><label for="cfg-admin-password">${escapeHtml(t('guide.adminPassword'))}</label><input id="cfg-admin-password" type="password" value="${escapeHtml(state.hostConfig.adminPassword)}" autocomplete="off" /></div>
-      <div class="field"><label for="cfg-cluster-secret">${escapeHtml(t('guide.clusterSecret'))}</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>
+      ${state.profileId === 'single' ? '' : `<div class="field"><label for="cfg-cluster-secret">${escapeHtml(t('guide.clusterSecret'))}</label><input id="cfg-cluster-secret" value="${escapeHtml(state.hostConfig.clusterSecret)}" /></div>`}
       ${renderHostConfig(state.profileId, state.hostConfig)}
       <div class="checkbox-row">
         <input type="checkbox" id="include-forwarders" ${state.includeForwarders ? 'checked' : ''} />
@@ -281,7 +287,7 @@ function renderSetupStepContent(state: GuideState): string {
   const linuxStep = getLinuxTipsStep();
   const linuxTitle = t(stepTitleKey(LINUX_TIPS_STEP_ID));
   const linuxBlocks =
-    linuxStep?.blocks.map((b) => renderBlock(b, state.hostConfig, state.linuxDistro)).join('') ?? '';
+    linuxStep?.blocks.map((b) => renderBlock(b, state.hostConfig, state.linuxDistro, state.profileId)).join('') ?? '';
   const linuxDocs = linuxStep ? renderDocLinks(linuxStep.docLinks) : '';
   const linuxValidations = linuxStep ? renderValidations(linuxStep, state) : '';
 
@@ -379,10 +385,10 @@ function buildMarkdown(state: GuideState): string {
   for (const step of steps) {
     md += `## ${t(stepPhaseKey(step.id))}: ${t(stepTitleKey(step.id))}\n\n`;
     for (const block of step.blocks) {
-      if (!blockVisible(block, state.linuxDistro)) continue;
-      const content = substitute(t(block.contentKey), state.hostConfig, extra);
+      if (!blockVisible(block, state.linuxDistro, state.profileId)) continue;
+      const content = substitute(t(block.contentKey), state.hostConfig, extra, state.profileId);
       if (block.type === 'commands' && block.commands) {
-        md += `${content}\n\n\`\`\`bash\n${substituteCommands(block.commands, state.hostConfig, extra).join('\n')}\n\`\`\`\n\n`;
+        md += `${content}\n\n\`\`\`bash\n${substituteCommands(block.commands, state.hostConfig, extra, state.profileId).join('\n')}\n\`\`\`\n\n`;
       } else {
         md += `${content}\n\n`;
       }
@@ -517,6 +523,15 @@ function renderHandoffBanner(state: GuideState): string {
     </div>`;
 }
 
+function renderGuideSidebarFooter(state: GuideState): string {
+  const profileLabel = t(profileLabelKey(state.profileId));
+  return `
+    <div class="guide-sidebar-footer">
+      <p class="guide-sidebar-profile">${escapeHtml(t('guide.profileSelected', { profileLabel }))}</p>
+      <button type="button" id="guide-start-over" class="btn-secondary guide-start-over-btn">${escapeHtml(t('guide.startOver'))}</button>
+    </div>`;
+}
+
 function renderGuideContent(container: HTMLElement, state: GuideState, stepIdOverride?: string | null): void {
   const installSteps = filterNavigableSteps(state.profileId, state.includeForwarders);
   const currentStepId = stepIdOverride ?? resolveCurrentStepId(installSteps, state);
@@ -540,6 +555,7 @@ function renderGuideContent(container: HTMLElement, state: GuideState, stepIdOve
         <aside class="guide-sidebar" id="guide-sidebar">
           <div class="guide-sidebar-section-label">${escapeHtml(t('guide.sidebarSteps'))}</div>
           ${renderGuideStepNav(installSteps, stateWithStep, currentStepId)}
+          ${renderGuideSidebarFooter(stateWithStep)}
         </aside>
         <div class="guide-main">
           ${renderGuideBreadcrumb(breadcrumbLabel)}
@@ -606,6 +622,15 @@ function bindGuideEvents(container: HTMLElement, initialState: GuideState): void
 
   container.querySelector('#guide-drawer-toggle')?.addEventListener('click', openDrawer);
   container.querySelector('#guide-sidebar-backdrop')?.addEventListener('click', closeDrawer);
+
+  container.querySelector('#guide-start-over')?.addEventListener('click', () => {
+    if (!window.confirm(t('guide.startOverConfirm'))) return;
+    const reset = resetGuideProgress(readState());
+    saveGuideState(reset);
+    renderGuideContent(container, reset, SETUP_STEP_ID);
+    scrollGuideMainToTop();
+    closeDrawer();
+  });
 
   container.querySelectorAll('input[name="profile"]').forEach((el) => {
     el.addEventListener('change', () => refresh(null));

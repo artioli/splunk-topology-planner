@@ -1,4 +1,5 @@
 import { t } from '../../i18n';
+import { DEPLOYMENT_PROFILES } from '../profiles';
 import { LINUX_TIPS_STEP_ID, type DeploymentProfileId, type GuideStep } from '../types';
 import { distributedNcSteps, singleServerSteps } from './distributedNc';
 import { forwarderAppendixSteps } from './forwarderAppendix';
@@ -56,4 +57,20 @@ export function getLinuxTipsStep(): GuideStep | undefined {
 
 export function targetLabel(target: string): string {
   return t(`guide.targets.${target}`);
+}
+
+export function targetsForProfile(
+  targets: GuideStep['targets'],
+  profileId: DeploymentProfileId,
+): GuideStep['targets'] {
+  const profile = DEPLOYMENT_PROFILES.find((p) => p.id === profileId);
+  if (!profile) return targets;
+  const roles = new Set(profile.hostRoles);
+  return targets.filter((tg) => {
+    if (tg === 'all-splunk') return true;
+    if (tg === 'idx-all') return profile.hostRoles.some((r) => r.startsWith('idx'));
+    if (tg === 'sh-all') return profile.hostRoles.some((r) => r.startsWith('sh'));
+    if (tg === 'uf-all') return profile.hostRoles.some((r) => r.startsWith('uf'));
+    return roles.has(tg as (typeof profile.hostRoles)[number]);
+  });
 }

@@ -1,4 +1,4 @@
-import type { DeploymentProfileId, GuideState, GuideStep, LinuxDistro } from './types';
+import { SETUP_STEP_ID, type DeploymentProfileId, type GuideState, type GuideStep, type LinuxDistro } from './types';
 import { defaultHostConfig } from './hostDefaults';
 
 const STORAGE_KEY = 'splunk-deployment-guide-state';
@@ -77,23 +77,42 @@ export function setSkipValidation(state: GuideState, stepId: string, skip: boole
   return { ...state, skipValidationSteps: [...set] };
 }
 
-export function requiredValidations(step: GuideStep): GuideStep['validations'] {
-  return step.validations.filter((v) => !v.optional);
+export function validationVisible(
+  validation: GuideStep['validations'][number],
+  profileId: DeploymentProfileId,
+): boolean {
+  if (!validation.profiles?.length) return true;
+  return validation.profiles.includes(profileId);
+}
+
+export function requiredValidations(
+  step: GuideStep,
+  profileId?: DeploymentProfileId,
+): GuideStep['validations'] {
+  return step.validations.filter(
+    (v) => !v.optional && (profileId === undefined || validationVisible(v, profileId)),
+  );
 }
 
 export function validationsComplete(state: GuideState, step: GuideStep): boolean {
   if (state.skipValidationSteps.includes(step.id)) return true;
-  const required = requiredValidations(step);
+  const required = requiredValidations(step, state.profileId);
   if (!required.length) return true;
   const done = new Set(state.validatedChecks[step.id] ?? []);
   return required.every((v) => done.has(v.id));
 }
 
+export function resetGuideProgress(state: GuideState): GuideState {
+  return {
+    ...state,
+    completedSteps: [],
+    validatedChecks: {},
+    skipValidationSteps: [],
+    currentStepId: SETUP_STEP_ID,
+  };
+}
+
 export function clearProgress(profileId: DeploymentProfileId): void {
   const state = loadGuideState();
-  saveGuideState({
-    ...state,
-    profileId,
-    completedSteps: state.completedSteps.filter((id) => !id.startsWith(`${profileId}:`)),
-  });
+  saveGuideState(resetGuideProgress({ ...state, profileId }));
 }

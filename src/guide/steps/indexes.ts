@@ -50,8 +50,44 @@ export const indexSteps: GuideStep[] = [
   },
   {
     id: 'indexes-standalone',
-    profiles: ['single', 'distributed_nc'],
-    targets: ['combined', 'idx1'],
+    profiles: ['single'],
+    targets: ['combined'],
+    docLinks: [{ labelKey: 'guide.docs.capacityManual', url: GUIDE_DOC_LINKS.capacityManual }],
+    blocks: [
+      {
+        type: 'commands',
+        contentKey: 'steps.indexes-standalone.blocks.open-indexes',
+        commands: ['vi /opt/splunk/etc/system/local/indexes.conf'],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.indexes-standalone.blocks.paste-index',
+        copyAsBlock: true,
+        commands: [
+          '[os]',
+          'homePath = $SPLUNK_DB/os/db',
+          'coldPath = $SPLUNK_DB/os/colddb',
+          'thawedPath = $SPLUNK_DB/os/thaweddb',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.indexes-standalone.blocks.restart',
+        commands: ['/opt/splunk/bin/splunk restart'],
+      },
+    ],
+    validations: [
+      {
+        id: 'index',
+        labelKey: 'steps.indexes-standalone.validations.index.label',
+        expectKey: 'steps.indexes-standalone.validations.index.expect',
+      },
+    ],
+  },
+  {
+    id: 'indexes-standalone-nc',
+    profiles: ['distributed_nc'],
+    targets: ['idx1'],
     docLinks: [{ labelKey: 'guide.docs.capacityManual', url: GUIDE_DOC_LINKS.capacityManual }],
     blocks: [
       {

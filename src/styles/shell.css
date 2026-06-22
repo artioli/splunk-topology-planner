@@ -447,6 +447,23 @@ html[data-theme='dark'] .home-hero-band {
   text-align: center;
 }
 
+.guide-sidebar-footer {
+  margin-top: auto;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.guide-sidebar-profile {
+  margin: 0 0 var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--sidebar-muted);
+  line-height: 1.4;
+}
+
+.guide-start-over-btn {
+  width: 100%;
+}
+
 .guide-main {
   min-width: 0;
   display: flex;

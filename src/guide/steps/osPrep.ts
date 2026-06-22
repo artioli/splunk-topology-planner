@@ -78,6 +78,20 @@ export const osPrepSteps: GuideStep[] = [
         type: 'commands',
         contentKey: 'steps.os-prep.blocks.firewalld-ports',
         distros: ['rhel'],
+        profiles: ['single'],
+        commands: [
+          'sudo firewall-cmd --permanent --add-port=8000/tcp',
+          'sudo firewall-cmd --permanent --add-port=8089/tcp',
+          'sudo firewall-cmd --permanent --add-port=9997/tcp',
+          'sudo firewall-cmd --permanent --add-port=8088/tcp',
+          'sudo firewall-cmd --reload',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.firewalld-ports',
+        distros: ['rhel'],
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
         commands: [
           'sudo firewall-cmd --permanent --add-port=8000/tcp',
           'sudo firewall-cmd --permanent --add-port=8089/tcp',
@@ -92,6 +106,20 @@ export const osPrepSteps: GuideStep[] = [
         type: 'commands',
         contentKey: 'steps.os-prep.blocks.ufw-ports',
         distros: ['ubuntu', 'debian'],
+        profiles: ['single'],
+        commands: [
+          'sudo ufw allow 8000/tcp',
+          'sudo ufw allow 8089/tcp',
+          'sudo ufw allow 9997/tcp',
+          'sudo ufw allow 8088/tcp',
+          'sudo ufw enable',
+        ],
+      },
+      {
+        type: 'commands',
+        contentKey: 'steps.os-prep.blocks.ufw-ports',
+        distros: ['ubuntu', 'debian'],
+        profiles: ['distributed_nc', 'distributed_ic', 'distributed_ic_shc'],
         commands: [
           'sudo ufw allow 8000/tcp',
           'sudo ufw allow 8089/tcp',
