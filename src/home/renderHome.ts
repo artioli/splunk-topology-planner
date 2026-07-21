@@ -34,6 +34,12 @@ export function renderHome(container: HTMLElement, onLocaleChange?: () => void):
             <p>${escapeHtml(t('home.cardGuideDesc'))}</p>
             <span class="home-card-cta">${escapeHtml(t('home.cardGuideCta'))} →</span>
           </a>
+          <a href="#enablement" class="home-card">
+            <span class="home-card-marker" aria-hidden="true"></span>
+            <h2>${escapeHtml(t('home.cardEnablementTitle'))}</h2>
+            <p>${escapeHtml(t('home.cardEnablementDesc'))}</p>
+            <span class="home-card-cta">${escapeHtml(t('home.cardEnablementCta'))} →</span>
+          </a>
           <a href="${DOC_LINKS.sva}" target="_blank" rel="noopener noreferrer" class="home-card">
             <span class="home-card-marker" aria-hidden="true"></span>
             <h2>${escapeHtml(t('home.cardDocsTitle'))}</h2>

@@ -1,0 +1,254 @@
+[
+  {
+    "credentialId": "cert-core-user",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-core-power-user",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-core-advanced-power-user",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-enterprise-admin",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-cloud-admin",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-enterprise-architect",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-core-consultant",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-es-admin-legacy",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-itsi-admin-legacy",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-soar-automation-dev-legacy",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-o11y-cloud-metrics-user",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-cyber-defense-analyst",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-cyber-defense-engineer",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "cert-cyber-defense-architect",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-observability-foundations-assessment",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-otel-collector-foundational",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-im-foundational-partner",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-synthetic-monitoring-foundational-partner",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-itops-foundations-assessment",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-uba-implementation-foundational",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "badge-uba-operationalization-foundational",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-distribution-sales-engineer",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-distribution-sales-specialist",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-managed-service-provider",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-tech-selling-foundations",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-platform-se-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-sales-engineer-ii",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-sales-rep-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-sales-rep-ii",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-cloud-enterprise-developer",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-itsi-consultant-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-observability-consultant-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-observability-consultant-ii",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-observability-sales-rep-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-observability-se-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-es-implementation",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-security-sales-rep-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-security-se-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-siem-replacement-consultant",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-soar-consultant-i",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-soar-consultant-ii",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  },
+  {
+    "credentialId": "acc-zero-trust-security-consultant",
+    "imageUrl": "",
+    "pageUrl": "https://www.credly.com/organizations/splunk/badges",
+    "localImage": "badges/placeholder.svg"
+  }
+]

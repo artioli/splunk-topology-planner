@@ -1,0 +1,632 @@
+[
+  {
+    "id": "using-fields",
+    "name": "Using Fields",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "scheduling-reports-and-alerts",
+    "name": "Scheduling Reports and Alerts (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "visualizations",
+    "name": "Visualizations (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "working-with-time",
+    "name": "Working with Time",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "statistical-processing",
+    "name": "Statistical Processing",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "comparing-values",
+    "name": "Comparing Values",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "result-modification",
+    "name": "Result Modification",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "leveraging-lookups-and-subsearches",
+    "name": "Leveraging Lookups and Subsearches",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "correlation-analysis",
+    "name": "Correlation Analysis",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "search-under-the-hood",
+    "name": "Search Under the Hood (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "multivalue-fields",
+    "name": "Multivalue Fields",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "creating-knowledge-objects",
+    "name": "Creating Knowledge Objects",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "creating-field-extractions",
+    "name": "Creating Field Extractions",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "enriching-data-with-lookups",
+    "name": "Enriching Data with Lookups",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "data-models",
+    "name": "Data Models",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "introduction-to-dashboards",
+    "name": "Introduction to Dashboards",
+    "durationLabel": "4.5 Hours",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "dynamic-dashboards",
+    "name": "Dynamic Dashboards",
+    "durationLabel": "4.5 Hours",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "creating-maps",
+    "name": "Creating Maps",
+    "durationLabel": "4.5 Hours",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "search-optimization",
+    "name": "Search Optimization",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "developing-splunk-ui-dashboards",
+    "name": "Developing Splunk UI Dashboards",
+    "durationLabel": "4.5 hours",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "creating-classic-dashboards",
+    "name": "Creating Classic Dashboards",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "exploring-and-analyzing-data-with-splunk",
+    "name": "Exploring and Analyzing Data with Splunk",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "splunk-for-analytics-and-data-science",
+    "name": "Splunk for Analytics and Data Science",
+    "durationLabel": "Three 4.5-Hour Days",
+    "durationHours": 13.5,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "building-splunk-classic-apps",
+    "name": "Building Splunk Classic Apps",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "using-the-splunk-rest-api",
+    "name": "Using the Splunk REST API",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "splunk-enterprise-system-administration",
+    "name": "Splunk Enterprise System Administration",
+    "durationLabel": "Two 6-Hour Days",
+    "durationHours": 12,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "splunk-enterprise-data-administration",
+    "name": "Splunk Enterprise Data Administration",
+    "durationLabel": "Three 6-Hour Days",
+    "durationHours": 18,
+    "iltCostUsd": 2250,
+    "iltUnits": 225
+  },
+  {
+    "id": "transitioning-to-splunk-cloud",
+    "name": "Transitioning to Splunk Cloud",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "splunk-cloud-administration",
+    "name": "Splunk Cloud Administration",
+    "durationLabel": "Four 4.5-Hour Days",
+    "durationHours": 18,
+    "iltCostUsd": 2000,
+    "iltUnits": 200
+  },
+  {
+    "id": "mastering-splunk-data-management-techniques",
+    "name": "Mastering Splunk Data Management Techniques",
+    "durationLabel": "Four 4.5-Hour Days",
+    "durationHours": 18,
+    "iltCostUsd": 2000,
+    "iltUnits": 200
+  },
+  {
+    "id": "troubleshooting-splunk-enterprise",
+    "name": "Troubleshooting Splunk Enterprise",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "splunk-enterprise-cluster-administration",
+    "name": "Splunk Enterprise Cluster Administration",
+    "durationLabel": "Three 4.5-Hour Days",
+    "durationHours": 13.5,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "architecting-splunk-enterprise-deployments",
+    "name": "Architecting Splunk Enterprise Deployments",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "services-core-implementation",
+    "name": "Services: Core Implementation",
+    "durationLabel": "Five 8-Hour Days",
+    "durationHours": 40,
+    "iltCostUsd": 3000,
+    "iltUnits": 300
+  },
+  {
+    "id": "splunk-enterprise-deployment-practical-lab",
+    "name": "Splunk Enterprise Deployment Practical Lab",
+    "durationLabel": "24 Hours",
+    "durationHours": 24,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "introduction-to-implementing-splunk-smartstore",
+    "name": "Introduction to Implementing Splunk SmartStore (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "implementing-splunk-smartstore-for-indexer-clusters",
+    "name": "Implementing Splunk SmartStore for Indexer Clusters (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "soc-essentials-investigating-with-splunk",
+    "name": "SOC Essentials: Investigating with Splunk (eLearning with labs)",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "soc-essentials-introduction-to-threat-hunting",
+    "name": "SOC Essentials: Introduction to Threat Hunting (eLearning with labs)",
+    "durationLabel": "6 Hours",
+    "durationHours": 6,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "soc-essentials-investigating-and-threat-hunting",
+    "name": "SOC Essentials: Investigating and Threat Hunting",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "splunk-enterprise-security-investigating-with-aws-cloudtrail",
+    "name": "Splunk Enterprise Security: Investigating with AWS CloudTrail (Lab Exercise)",
+    "durationLabel": "1-3 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 100,
+    "elearningUnits": 10
+  },
+  {
+    "id": "splunk-enterprise-security-investigating-and-responding-with-aws",
+    "name": "Splunk Enterprise Security: Investigating and Responding with AWS (Lab Exercise)",
+    "durationLabel": "3-4 Hours",
+    "durationHours": 3.5,
+    "elearningCostUsd": 100,
+    "elearningUnits": 10
+  },
+  {
+    "id": "splunk-es-premier-detection-engineering-in-action",
+    "name": "Splunk ES Premier: Detection Engineering in Action (Lab Exercise)",
+    "durationLabel": "4 Hours",
+    "durationHours": 4,
+    "elearningCostUsd": 100,
+    "elearningUnits": 10
+  },
+  {
+    "id": "using-splunk-ueba-to-detect-insider-threats",
+    "name": "Using Splunk UEBA to Detect Insider Threats (Lab Exercise)",
+    "durationLabel": "1-3 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 100,
+    "elearningUnits": 10
+  },
+  {
+    "id": "administering-splunk-enterprise-security",
+    "name": "Administering Splunk Enterprise Security",
+    "durationLabel": "Three 4.5-Hour Days",
+    "durationHours": 13.5,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "using-splunk-enterprise-security",
+    "name": "Using Splunk Enterprise Security",
+    "durationLabel": "Three 4.5-Hour Days",
+    "durationHours": 13.5,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "implementing-splunk-it-service-intelligence",
+    "name": "Implementing Splunk IT Service Intelligence",
+    "durationLabel": "Four 4.5-Hour Days",
+    "durationHours": 18,
+    "iltCostUsd": 2000,
+    "iltUnits": 200
+  },
+  {
+    "id": "using-splunk-it-service-intelligence",
+    "name": "Using Splunk IT Service Intelligence",
+    "durationLabel": "One 6-Hour Day",
+    "durationHours": 6,
+    "iltCostUsd": 750,
+    "iltUnits": 75,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "using-itsi-service-monitoring",
+    "name": "Using ITSI Service Monitoring (elearning with labs)",
+    "durationLabel": "2 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "using-itsi-event-analytics",
+    "name": "Using ITSI Event Analytics (elearning with labs)",
+    "durationLabel": "2 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "implementing-splunk-soar-community-playbooks",
+    "name": "Implementing Splunk SOAR Community Playbooks (eLearning with labs)",
+    "durationLabel": "2 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-one",
+    "name": "Developing Splunk SOAR Playbooks in the Visual Playbook Editor: Part One (eLearning with labs)",
+    "durationLabel": "2 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-two",
+    "name": "Developing Splunk SOAR Playbooks in the Visual Playbook Editor: Part Two (eLearning with labs)",
+    "durationLabel": "2 Hours",
+    "durationHours": 2,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "administering-splunk-soar",
+    "name": "Administering Splunk SOAR",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "investigating-incidents-splunk-soar",
+    "name": "Investigating Incidents Splunk SOAR",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "developing-soar-playbooks",
+    "name": "Developing SOAR Playbooks",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "developing-splunk-soar-playbooks-for-splunk-enterprise-security",
+    "name": "Developing Splunk SOAR Playbooks for Splunk Enterprise Security (eLearning with labs)",
+    "durationLabel": "4 Hours",
+    "durationHours": 4,
+    "elearningCostUsd": 300,
+    "elearningUnits": 30
+  },
+  {
+    "id": "developing-splunk-soar-apps",
+    "name": "Developing Splunk SOAR Apps (eLearning with labs)",
+    "durationLabel": "6 Hours",
+    "durationHours": 6,
+    "elearningCostUsd": 450,
+    "elearningUnits": 45,
+    "freeVideoOnly": true
+  },
+  {
+    "id": "advanced-soar-implementation",
+    "name": "Advanced SOAR Implementation",
+    "durationLabel": "Three 4.5-Hour Days",
+    "durationHours": 13.5,
+    "iltCostUsd": 1500,
+    "iltUnits": 150
+  },
+  {
+    "id": "full-observability-pipeline-with-splunk-opentelemetry",
+    "name": "Full Observability Pipeline with Splunk OpenTelemetry",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "fundamentals-of-metrics-monitoring-in-splunk-observability",
+    "name": "Fundamentals of Metrics Monitoring in Splunk Observability",
+    "durationLabel": "One 6-Hour Day",
+    "durationHours": 6,
+    "iltCostUsd": 750,
+    "iltUnits": 75
+  },
+  {
+    "id": "visualizing-and-alerting-in-splunk-observability-cloud",
+    "name": "Visualizing and Alerting in Splunk Observability Cloud",
+    "durationLabel": "One 4.5-Hour Day",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "using-splunk-application-performance-monitoring",
+    "name": "Using Splunk Application Performance Monitoring",
+    "durationLabel": "One 4.5-Hour Day",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "using-signal-flow-in-splunk-observability-cloud",
+    "name": "Using Signal Flow in Splunk Observability Cloud",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "ingesting-application-metrics-in-splunk-observability-cloud",
+    "name": "Ingesting Application Metrics in Splunk Observability Cloud",
+    "durationLabel": "One 4.5-Hour Day",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "manual-instrumentation-with-splunk-apm",
+    "name": "Manual Instrumentation with Splunk APM",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "using-the-splunk-im-terraform-provider",
+    "name": "Using the Splunk IM Terraform Provider",
+    "durationLabel": "Two 4.5-Hour Days",
+    "durationHours": 9,
+    "iltCostUsd": 1000,
+    "iltUnits": 100
+  },
+  {
+    "id": "kubernetes-monitoring-with-splunk-observability-cloud",
+    "name": "Kubernetes Monitoring with Splunk Observability Cloud",
+    "durationLabel": "4.5 Hours",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "splunk-on-call-administration",
+    "name": "Splunk On-Call Administration",
+    "durationLabel": "One 4.5-Hour Day",
+    "durationHours": 4.5,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "using-splunk-synthetic-monitoring",
+    "name": "Using Splunk Synthetic Monitoring",
+    "durationLabel": "One 6-Hour Day",
+    "durationHours": 6,
+    "iltCostUsd": 750,
+    "iltUnits": 75
+  },
+  {
+    "id": "using-splunk-real-user-monitoring",
+    "name": "Using Splunk Real User Monitoring",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  },
+  {
+    "id": "using-splunk-incident-intelligence",
+    "name": "Using Splunk Incident Intelligence",
+    "durationLabel": "3 Hours",
+    "durationHours": 3,
+    "iltCostUsd": 500,
+    "iltUnits": 50
+  }
+]

@@ -2,13 +2,14 @@ import { getLocale, setLocale, t } from './i18n';
 import type { Locale } from './i18n/types';
 import { cycleTheme, getStoredTheme, themeToggleLabel } from './theme';
 
-export type AppRoute = 'home' | 'planner' | 'guide';
+export type AppRoute = 'home' | 'planner' | 'guide' | 'enablement';
 
 export function getRoute(): AppRoute {
   const hash = window.location.hash.replace(/^#/, '');
   const route = hash.split('?')[0].split('&')[0];
   if (route === 'guide') return 'guide';
   if (route === 'planner') return 'planner';
+  if (route === 'enablement') return 'enablement';
   return 'home';
 }
 
@@ -39,6 +40,7 @@ export function renderNav(active: AppRoute): string {
         <a href="#home" class="nav-link ${active === 'home' ? 'active' : ''}">${escapeHtml(t('nav.home'))}</a>
         <a href="#planner" class="nav-link ${active === 'planner' ? 'active' : ''}">${escapeHtml(t('nav.planner'))}</a>
         <a href="#guide" class="nav-link ${active === 'guide' ? 'active' : ''}">${escapeHtml(t('nav.guide'))}</a>
+        <a href="#enablement" class="nav-link ${active === 'enablement' ? 'active' : ''}">${escapeHtml(t('nav.enablement'))}</a>
       </div>
       <div class="nav-actions">
         <label class="nav-lang">
@@ -62,6 +64,10 @@ export function renderNav(active: AppRoute): string {
       <a href="#guide" class="nav-tab ${active === 'guide' ? 'active' : ''}">
         <span class="nav-tab-icon" aria-hidden="true">📋</span>
         <span>${escapeHtml(t('nav.guide'))}</span>
+      </a>
+      <a href="#enablement" class="nav-tab ${active === 'enablement' ? 'active' : ''}">
+        <span class="nav-tab-icon" aria-hidden="true">🎓</span>
+        <span>${escapeHtml(t('nav.enablement'))}</span>
       </a>
     </nav>`;
 }

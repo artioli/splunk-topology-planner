@@ -1,4 +1,5 @@
 import './styles/global.css';
+import { renderEnablement } from './enablement/renderEnablement';
 import { initLocaleFromHash, subscribeLocale } from './i18n';
 import { renderGuide } from './guide/renderGuide';
 import { renderHome } from './home/renderHome';
@@ -17,6 +18,8 @@ function render(): void {
     renderGuide(app, render);
   } else if (route === 'planner') {
     renderPlanner(app, render);
+  } else if (route === 'enablement') {
+    renderEnablement(app, render);
   } else {
     renderHome(app, render);
   }

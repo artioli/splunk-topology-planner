@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Credential badge">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f04e98"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#g)" stroke="#fff" stroke-width="3"/>
+  <polygon points="60,22 72,48 98,52 78,70 84,96 60,82 36,96 42,70 22,52 48,48" fill="#fff" opacity="0.92"/>
+</svg>

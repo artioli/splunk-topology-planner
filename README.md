@@ -1,6 +1,6 @@
 # Splunk On-Prem Topology Planner
 
-A static, browser-based web app for planning and lab-deploying **on-premises Splunk Enterprise**, with no backend. It pairs a sizing wizard with a step-by-step **Linux deployment guide**, translating workload inputs into **Splunk Validated Architecture (SVA)** recommendations, storage estimates, hardware baselines, firewall ports, and ordered install commands.
+A static, browser-based web app for planning and lab-deploying **on-premises Splunk Enterprise**, with no backend. It pairs a sizing wizard with a step-by-step **Linux deployment guide** and a **Certification & Accreditation Matrix** for partner enablement planning.
 
 Created by **artioli** with the help of **Cursor AI**.
 
@@ -35,9 +35,31 @@ Filtered, copy-paste command guide for RHEL-family Linux (with Ubuntu callouts),
 - Optional Universal Forwarder appendix
 - Copy the full guide as Markdown
 
+### Enablement Matrix (`#enablement`)
+
+Partner-focused certification and accreditation planner with time, cost, and prerequisite path maps.
+
+- **Catalog tabs** — accreditations (default), certifications, technical badges/assessments, and full course pricing catalog
+- **Filters** — track (General / Observability / Security / Core), persona, partner-only, cost/time range, search, hide completed
+- **Path map** — layered prerequisite ladder with badge images, Mindtickle deeplinks, and Splunk/Credly references
+- **OR prerequisites** — branch selector for alternative paths (e.g. SOAR Consultant I)
+- **Team plan** — multi-select credentials with deduped total time/cost rollup
+- **Progress tracking** — mark credentials complete in `localStorage`; remaining totals update
+- **Export** — copy path or full matrix as Markdown/CSV
+- **Matrix table** — sortable Excel replacement view
+
+Data sources (see `src/enablement/data/manifest.json`):
+
+- [Splunk Education pricing](https://www.splunk.com/en_us/training/pricing.html)
+- [Splunk certifications](https://www.splunk.com/en_us/training/certification.html)
+- [Student handbook (PDF)](https://www.splunk.com/en_us/pdfs/training/splunk-education-student-handbook.pdf)
+- Partner accreditation metadata (Mindtickle) and [Splunk Credly badges](https://www.credly.com/organizations/splunk/badges)
+
+**Refreshing enablement data:** edit JSON under `src/enablement/data/`, update `manifest.json` `lastUpdated`, run `node scripts/seed-credly-badges.mjs` if credentials were added, then `npm test && npm run build`.
+
 ## How to use
 
-Plan your deployment in `#planner` (enter ingest, retention, and topology preferences; review the SVA code, storage, and hardware), then open `#guide` and pick the profile that matches your SVA to get the ordered install commands.
+Plan your deployment in `#planner` (enter ingest, retention, and topology preferences; review the SVA code, storage, and hardware), then open `#guide` and pick the profile that matches your SVA to get the ordered install commands. Use `#enablement` to map certification and partner accreditation paths with time and cost estimates for enablement planning.
 
 ## Where the information comes from
 
