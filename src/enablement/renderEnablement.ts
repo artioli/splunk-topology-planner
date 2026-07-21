@@ -4,6 +4,7 @@ import { bindNavEvents, renderNav } from '../nav';
 import { filterCourses, filterCredentials, filterCredentialsForMatrix, groupByTrack, prerequisiteCount } from './catalog';
 import { courses, getCredentials, manifest } from './data/load';
 import { copyCsv, copyMarkdown, copyMatrixCsv } from './exportPath';
+import { sortPathNodesForTable } from './pathTable';
 import { formatCost, formatHours, kindLabelKey, trackLabelKey } from './format';
 import {
   buildCredentialMap,
@@ -81,14 +82,6 @@ function renderFilters(state: EnablementState): string {
         <input type="checkbox" id="en-hide-completed" ${f.hideCompleted ? 'checked' : ''} />
         ${escapeHtml(t('enablement.filter.hideCompleted'))}
       </label>
-      <div class="field">
-        <label for="en-cost-max">${escapeHtml(t('enablement.filter.costMax'))}: $${f.costMax.toLocaleString()}</label>
-        <input id="en-cost-max" type="range" min="0" max="15000" step="500" value="${f.costMax}" />
-      </div>
-      <div class="field">
-        <label for="en-time-max">${escapeHtml(t('enablement.filter.timeMax'))}: ${f.timeMax} h</label>
-        <input id="en-time-max" type="range" min="0" max="300" step="5" value="${f.timeMax}" />
-      </div>
     </div>`;
 }
 
@@ -145,12 +138,13 @@ function renderCatalog(state: EnablementState): string {
   return sections || `<p class="field-hint">${escapeHtml(t('enablement.catalog.empty'))}</p>`;
 }
 
-function renderPathNode(node: PathNode): string {
+function renderPathNode(node: PathNode, compact = false): string {
   const c = node.credential;
   const done = node.completed;
+  const badgeSize = compact ? 48 : 72;
   return `
-    <div class="path-node ${done ? 'is-done' : ''}" data-level="${node.level}">
-      <img class="path-node-badge" src="${escapeHtml(badgeSrc(c))}" alt="" width="72" height="72" loading="lazy" />
+    <div class="path-node ${compact ? 'path-node--compact' : ''} ${done ? 'is-done' : ''}" data-level="${node.level}">
+      <img class="path-node-badge" src="${escapeHtml(badgeSrc(c))}" alt="" width="${badgeSize}" height="${badgeSize}" loading="lazy" />
       <div class="path-node-body">
         <span class="chip chip-kind">${escapeHtml(t(kindLabelKey(c.kind)))}</span>
         ${c.partnerOnly ? `<span class="chip chip-partner">${escapeHtml(t('enablement.partner'))}</span>` : ''}
@@ -166,6 +160,80 @@ function renderPathNode(node: PathNode): string {
           ${escapeHtml(t('enablement.markComplete'))}
         </label>
       </div>
+    </div>`;
+}
+
+function renderPlanningNotes(): string {
+  return `
+    <aside class="enablement-planning-notes" aria-labelledby="en-planning-notes-title">
+      <h2 id="en-planning-notes-title" class="enablement-planning-notes-title">${escapeHtml(t('enablement.notes.title'))}</h2>
+      <ul class="enablement-planning-notes-list">
+        <li>${escapeHtml(t('enablement.notes.fastStart'))}</li>
+        <li>${escapeHtml(t('enablement.notes.partnerDiscount'))}</li>
+        <li>${escapeHtml(t('enablement.notes.exam'))}</li>
+      </ul>
+      <p class="field-hint enablement-planning-notes-courses">${escapeHtml(t('enablement.notes.coursesHint'))}</p>
+    </aside>`;
+}
+
+function renderPathLinks(c: Credential): string {
+  const parts: string[] = [];
+  if (c.mindtickleUrl) {
+    parts.push(`<a href="${escapeHtml(c.mindtickleUrl)}" target="_blank" rel="noopener noreferrer">Mindtickle</a>`);
+  }
+  if (c.splunkUrl) {
+    parts.push(`<a href="${escapeHtml(c.splunkUrl)}" target="_blank" rel="noopener noreferrer">Splunk</a>`);
+  }
+  if (c.credlyPageUrl) {
+    parts.push(`<a href="${escapeHtml(c.credlyPageUrl)}" target="_blank" rel="noopener noreferrer">Credly</a>`);
+  }
+  return parts.length ? parts.join(' · ') : '—';
+}
+
+function renderPathStepsTable(path: ReturnType<typeof resolvePath>): string {
+  const rows = sortPathNodesForTable(path.nodes);
+  const body = rows
+    .map((node, index) => {
+      const c = node.credential;
+      const chips = [
+        c.partnerOnly ? `<span class="chip chip-partner">${escapeHtml(t('enablement.partner'))}</span>` : '',
+        c.legacy ? `<span class="chip chip-legacy">${escapeHtml(t('enablement.legacy'))}</span>` : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return `
+      <tr class="${node.completed ? 'is-done' : ''}">
+        <td>${index + 1}</td>
+        <td><span class="enablement-path-cred-name">${escapeHtml(c.name)}</span> ${chips}</td>
+        <td>${escapeHtml(t(kindLabelKey(c.kind)))}</td>
+        <td>${escapeHtml(formatHours(c.timeHours))}</td>
+        <td>${escapeHtml(formatCost(c.costUsd))}</td>
+        <td>
+          <label class="enablement-check">
+            <input type="checkbox" class="complete-cb" data-complete-id="${escapeHtml(c.id)}" ${node.completed ? 'checked' : ''} />
+            ${escapeHtml(t('enablement.markComplete'))}
+          </label>
+        </td>
+        <td class="enablement-path-links">${renderPathLinks(c)}</td>
+      </tr>`;
+    })
+    .join('');
+  return `
+    <div class="enablement-path-table-wrap">
+      <table class="enablement-path-table">
+        <thead>
+          <tr>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.step'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.credential'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.type'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.time'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.cost'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.status'))}</th>
+            <th scope="col">${escapeHtml(t('enablement.pathTable.links'))}</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
     </div>`;
 }
 
@@ -258,13 +326,14 @@ function renderPathMap(state: EnablementState): string {
     ${renderSummary(path, state)}
     ${renderOrBranches(state, state.selectedId)}
     ${guideCallout}
-    <div class="path-map">
+    ${renderPathStepsTable(path)}
+    <div class="path-map path-map--compact">
       ${layers
         .map(
           (layer, idx) => `
         <div class="path-map-layer" data-layer="${idx}">
           ${idx < layers.length - 1 ? '<div class="path-map-connector" aria-hidden="true"></div>' : ''}
-          <div class="path-map-row">${layer.map(renderPathNode).join('')}</div>
+          <div class="path-map-row">${layer.map((n) => renderPathNode(n, true)).join('')}</div>
         </div>`,
         )
         .join('')}
@@ -318,12 +387,14 @@ function renderMain(state: EnablementState): string {
   return `
     <div class="enablement-main">
       <header class="enablement-main-header">
+        <button type="button" class="enablement-drawer-toggle" id="enablement-drawer-toggle" aria-label="${escapeHtml(t('enablement.menuToggle'))}">☰</button>
         <h1 class="splunk-h2">${escapeHtml(title)}</h1>
         <div class="enablement-view-toggle">
           <button type="button" class="btn-secondary ${state.viewMode === 'path' ? 'is-active' : ''}" data-view="path">${escapeHtml(t('enablement.view.path'))}</button>
           <button type="button" class="btn-secondary ${state.viewMode === 'matrix' ? 'is-active' : ''}" data-view="matrix">${escapeHtml(t('enablement.view.matrix'))}</button>
         </div>
       </header>
+      ${renderPlanningNotes()}
       ${state.viewMode === 'path' ? renderPathMap(state) : renderMatrix(state)}
       <footer class="enablement-disclaimer">
         <p class="field-hint">${escapeHtml(t('enablement.disclaimer'))}</p>
@@ -369,13 +440,16 @@ function bindEnablementEvents(container: HTMLElement, onLocaleChange?: () => voi
     patchFilters({ hideCompleted: (e.target as HTMLInputElement).checked });
   });
 
-  container.querySelector('#en-cost-max')?.addEventListener('input', (e) => {
-    patchFilters({ costMax: Number((e.target as HTMLInputElement).value) });
-  });
-
-  container.querySelector('#en-time-max')?.addEventListener('input', (e) => {
-    patchFilters({ timeMax: Number((e.target as HTMLInputElement).value) });
-  });
+  const closeEnDrawer = (): void => {
+    document.getElementById('enablement-sidebar')?.classList.remove('is-open');
+    document.getElementById('enablement-sidebar-backdrop')?.classList.remove('is-open');
+  };
+  const openEnDrawer = (): void => {
+    document.getElementById('enablement-sidebar')?.classList.add('is-open');
+    document.getElementById('enablement-sidebar-backdrop')?.classList.add('is-open');
+  };
+  container.querySelector('#enablement-drawer-toggle')?.addEventListener('click', openEnDrawer);
+  container.querySelector('#enablement-sidebar-backdrop')?.addEventListener('click', closeEnDrawer);
 
   container.querySelectorAll('[data-select-id]').forEach((el) => {
     el.addEventListener('click', () => {
@@ -471,7 +545,8 @@ export function renderEnablement(container: HTMLElement, onLocaleChange?: () => 
         <p class="splunk-subhead-lg">${escapeHtml(t('enablement.subtitle'))}</p>
       </header>
       <div class="enablement-body">
-        <aside class="enablement-sidebar">
+        <div class="enablement-sidebar-backdrop" id="enablement-sidebar-backdrop"></div>
+        <aside class="enablement-sidebar" id="enablement-sidebar">
           ${renderFilters(state)}
           <div class="enablement-catalog-wrap">${renderCatalog(state)}</div>
         </aside>

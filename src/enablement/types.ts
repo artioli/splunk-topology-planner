@@ -99,8 +99,6 @@ export interface EnablementFilters {
   track: CredentialTrack | 'all';
   persona: Persona | 'all';
   partnerOnly: boolean;
-  costMax: number;
-  timeMax: number;
   hideCompleted: boolean;
 }
 
@@ -119,8 +117,6 @@ export const DEFAULT_FILTERS: EnablementFilters = {
   track: 'all',
   persona: 'all',
   partnerOnly: false,
-  costMax: 15000,
-  timeMax: 300,
   hideCompleted: false,
 };
 

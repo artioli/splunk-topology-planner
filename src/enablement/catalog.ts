@@ -30,8 +30,6 @@ function matchesCredentialFilters(c: Credential, filters: EnablementFilters, com
   if (filters.partnerOnly && !c.partnerOnly) return false;
   if (filters.track !== 'all' && c.track !== filters.track) return false;
   if (filters.persona !== 'all' && !c.personas.includes(filters.persona as Persona)) return false;
-  if (c.costUsd.min > filters.costMax && c.costUsd.max > filters.costMax) return false;
-  if (c.timeHours.min > filters.timeMax && c.timeHours.max > filters.timeMax) return false;
   if (filters.hideCompleted && completedIds.includes(c.id)) return false;
   const q = filters.search.trim().toLowerCase();
   if (q && !credentialSearchText(c).includes(q)) return false;
@@ -65,8 +63,6 @@ function matchesCredentialFiltersExceptTab(
   if (filters.partnerOnly && !c.partnerOnly) return false;
   if (filters.track !== 'all' && c.track !== filters.track) return false;
   if (filters.persona !== 'all' && !c.personas.includes(filters.persona as Persona)) return false;
-  if (c.costUsd.min > filters.costMax && c.costUsd.max > filters.costMax) return false;
-  if (c.timeHours.min > filters.timeMax && c.timeHours.max > filters.timeMax) return false;
   if (filters.hideCompleted && completedIds.includes(c.id)) return false;
   const q = filters.search.trim().toLowerCase();
   if (q && !credentialSearchText(c).includes(q)) return false;

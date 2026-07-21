@@ -1,4 +1,5 @@
 import { formatCost, formatHours } from './format';
+import { sortPathNodesForTable } from './pathTable';
 import type { Credential, ResolvedPath } from './types';
 
 export function pathToMarkdown(path: ResolvedPath): string {
@@ -11,25 +12,37 @@ export function pathToMarkdown(path: ResolvedPath): string {
     '',
     '## Path',
     '',
+    '| Step | Credential | Type | Time | Cost | Done |',
+    '| --- | --- | --- | --- | --- | --- |',
   ];
-  const sorted = [...path.nodes].sort((a, b) => b.level - a.level);
+  const sorted = sortPathNodesForTable(path.nodes);
+  for (let i = 0; i < sorted.length; i++) {
+    const node = sorted[i];
+    const c = node.credential;
+    const done = node.completed ? 'yes' : 'no';
+    lines.push(
+      `| ${i + 1} | ${c.name} | ${c.kind} | ${formatHours(c.timeHours)} | ${formatCost(c.costUsd)} | ${done} |`,
+    );
+  }
+  lines.push('');
   for (const node of sorted) {
     const c = node.credential;
-    const done = node.completed ? ' [x]' : ' [ ]';
-    lines.push(`- ${done} **${c.name}** (${c.kind}) — ${formatHours(c.timeHours)}, ${formatCost(c.costUsd)}`);
-    if (c.mindtickleUrl) lines.push(`  - Mindtickle: ${c.mindtickleUrl}`);
-    if (c.splunkUrl) lines.push(`  - Splunk: ${c.splunkUrl}`);
-    if (c.credlyPageUrl) lines.push(`  - Credly: ${c.credlyPageUrl}`);
+    if (c.mindtickleUrl) lines.push(`- ${c.name} Mindtickle: ${c.mindtickleUrl}`);
+    if (c.splunkUrl) lines.push(`- ${c.name} Splunk: ${c.splunkUrl}`);
+    if (c.credlyPageUrl) lines.push(`- ${c.name} Credly: ${c.credlyPageUrl}`);
   }
   return lines.join('\n');
 }
 
 export function pathToCsv(path: ResolvedPath): string {
-  const header = 'name,kind,track,time_min_h,time_max_h,cost_min_usd,cost_max_usd,mindtickle_url,splunk_url,credly_url,completed';
-  const rows = path.nodes.map((node) => {
+  const header =
+    'step,name,kind,track,time_min_h,time_max_h,cost_min_usd,cost_max_usd,mindtickle_url,splunk_url,credly_url,completed';
+  const sorted = sortPathNodesForTable(path.nodes);
+  const rows = sorted.map((node, index) => {
     const c = node.credential;
     const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
     return [
+      index + 1,
       esc(c.name),
       c.kind,
       c.track,
