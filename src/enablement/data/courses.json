@@ -8,7 +8,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-fields.html"
   },
   {
     "id": "scheduling-reports-and-alerts",
@@ -17,7 +18,8 @@
     "durationHours": 3,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/scheduling-reports-and-alerts.html"
   },
   {
     "id": "visualizations",
@@ -26,7 +28,8 @@
     "durationHours": 3,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/visualizations.html"
   },
   {
     "id": "working-with-time",
@@ -37,7 +40,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/working-with-time.html"
   },
   {
     "id": "statistical-processing",
@@ -48,7 +52,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/statistical-processing.html"
   },
   {
     "id": "comparing-values",
@@ -59,7 +64,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/comparing-values.html"
   },
   {
     "id": "result-modification",
@@ -70,7 +76,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/result-modification.html"
   },
   {
     "id": "leveraging-lookups-and-subsearches",
@@ -80,7 +87,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/leveraging-lookups-and-subsearches.html"
   },
   {
     "id": "correlation-analysis",
@@ -90,7 +98,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/correlation-analysis.html"
   },
   {
     "id": "search-under-the-hood",
@@ -99,7 +108,8 @@
     "durationHours": 3,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/search-under-the-hood.html"
   },
   {
     "id": "multivalue-fields",
@@ -109,7 +119,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/multivalue-fields.html"
   },
   {
     "id": "creating-knowledge-objects",
@@ -120,7 +131,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/creating-knowledge-objects.html"
   },
   {
     "id": "creating-field-extractions",
@@ -131,7 +143,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/creating-field-extractions.html"
   },
   {
     "id": "enriching-data-with-lookups",
@@ -142,7 +155,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/enriching-data-with-lookups.html"
   },
   {
     "id": "data-models",
@@ -153,7 +167,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/data-models.html"
   },
   {
     "id": "introduction-to-dashboards",
@@ -164,7 +179,8 @@
     "iltUnits": 50,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/introduction-to-dashboards.html"
   },
   {
     "id": "dynamic-dashboards",
@@ -174,7 +190,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/dynamic-dashboards.html"
   },
   {
     "id": "creating-maps",
@@ -184,7 +201,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/creating-maps.html"
   },
   {
     "id": "search-optimization",
@@ -194,7 +212,8 @@
     "iltCostUsd": 500,
     "iltUnits": 50,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/search-optimization.html"
   },
   {
     "id": "developing-splunk-ui-dashboards",
@@ -202,7 +221,8 @@
     "durationLabel": "4.5 hours",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-splunk-ui-dashboards.html"
   },
   {
     "id": "creating-classic-dashboards",
@@ -213,7 +233,8 @@
     "iltUnits": 100,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/creating-classic-dashboards.html"
   },
   {
     "id": "exploring-and-analyzing-data-with-splunk",
@@ -221,7 +242,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/exploring-and-analyzing-data-with-splunk.html"
   },
   {
     "id": "splunk-for-analytics-and-data-science",
@@ -229,7 +251,8 @@
     "durationLabel": "Three 4.5-Hour Days",
     "durationHours": 13.5,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-for-analytics-and-data-science.html"
   },
   {
     "id": "building-splunk-classic-apps",
@@ -237,7 +260,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/building-splunk-classic-apps.html"
   },
   {
     "id": "using-the-splunk-rest-api",
@@ -245,7 +269,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-the-splunk-rest-api.html"
   },
   {
     "id": "splunk-enterprise-system-administration",
@@ -253,7 +278,8 @@
     "durationLabel": "Two 6-Hour Days",
     "durationHours": 12,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-system-administration.html"
   },
   {
     "id": "splunk-enterprise-data-administration",
@@ -261,7 +287,8 @@
     "durationLabel": "Three 6-Hour Days",
     "durationHours": 18,
     "iltCostUsd": 2250,
-    "iltUnits": 225
+    "iltUnits": 225,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-data-administration.html"
   },
   {
     "id": "transitioning-to-splunk-cloud",
@@ -269,7 +296,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/transitioning-to-splunk-cloud.html"
   },
   {
     "id": "splunk-cloud-administration",
@@ -277,7 +305,8 @@
     "durationLabel": "Four 4.5-Hour Days",
     "durationHours": 18,
     "iltCostUsd": 2000,
-    "iltUnits": 200
+    "iltUnits": 200,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-cloud-administration.html"
   },
   {
     "id": "mastering-splunk-data-management-techniques",
@@ -285,7 +314,8 @@
     "durationLabel": "Four 4.5-Hour Days",
     "durationHours": 18,
     "iltCostUsd": 2000,
-    "iltUnits": 200
+    "iltUnits": 200,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/mastering-splunk-data-management-techniques.html"
   },
   {
     "id": "troubleshooting-splunk-enterprise",
@@ -293,7 +323,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/troubleshooting-splunk-enterprise.html"
   },
   {
     "id": "splunk-enterprise-cluster-administration",
@@ -301,7 +332,8 @@
     "durationLabel": "Three 4.5-Hour Days",
     "durationHours": 13.5,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-cluster-administration.html"
   },
   {
     "id": "architecting-splunk-enterprise-deployments",
@@ -309,7 +341,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/architecting-splunk-enterprise-deployments.html"
   },
   {
     "id": "services-core-implementation",
@@ -317,7 +350,8 @@
     "durationLabel": "Five 8-Hour Days",
     "durationHours": 40,
     "iltCostUsd": 3000,
-    "iltUnits": 300
+    "iltUnits": 300,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/services-core-implementation.html"
   },
   {
     "id": "splunk-enterprise-deployment-practical-lab",
@@ -325,7 +359,8 @@
     "durationLabel": "24 Hours",
     "durationHours": 24,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-deployment-practical-lab.html"
   },
   {
     "id": "introduction-to-implementing-splunk-smartstore",
@@ -333,7 +368,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/introduction-to-implementing-splunk-smartstore.html"
   },
   {
     "id": "implementing-splunk-smartstore-for-indexer-clusters",
@@ -341,7 +377,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/implementing-splunk-smartstore-for-indexer-clusters.html"
   },
   {
     "id": "soc-essentials-investigating-with-splunk",
@@ -350,7 +387,8 @@
     "durationHours": 3,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/soc-essentials-investigating-with-splunk.html"
   },
   {
     "id": "soc-essentials-introduction-to-threat-hunting",
@@ -359,7 +397,8 @@
     "durationHours": 6,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/soc-essentials-introduction-to-threat-hunting.html"
   },
   {
     "id": "soc-essentials-investigating-and-threat-hunting",
@@ -367,7 +406,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/soc-essentials-investigating-and-threat-hunting.html"
   },
   {
     "id": "splunk-enterprise-security-investigating-with-aws-cloudtrail",
@@ -375,7 +415,8 @@
     "durationLabel": "1-3 Hours",
     "durationHours": 2,
     "elearningCostUsd": 100,
-    "elearningUnits": 10
+    "elearningUnits": 10,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-security-investigating-with-aws-cloudtrail.html"
   },
   {
     "id": "splunk-enterprise-security-investigating-and-responding-with-aws",
@@ -383,7 +424,8 @@
     "durationLabel": "3-4 Hours",
     "durationHours": 3.5,
     "elearningCostUsd": 100,
-    "elearningUnits": 10
+    "elearningUnits": 10,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-enterprise-security-investigating-and-responding-with-aws.html"
   },
   {
     "id": "splunk-es-premier-detection-engineering-in-action",
@@ -391,7 +433,8 @@
     "durationLabel": "4 Hours",
     "durationHours": 4,
     "elearningCostUsd": 100,
-    "elearningUnits": 10
+    "elearningUnits": 10,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-es-premier-detection-engineering-in-action.html"
   },
   {
     "id": "using-splunk-ueba-to-detect-insider-threats",
@@ -399,7 +442,8 @@
     "durationLabel": "1-3 Hours",
     "durationHours": 2,
     "elearningCostUsd": 100,
-    "elearningUnits": 10
+    "elearningUnits": 10,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-ueba-to-detect-insider-threats.html"
   },
   {
     "id": "administering-splunk-enterprise-security",
@@ -407,7 +451,8 @@
     "durationLabel": "Three 4.5-Hour Days",
     "durationHours": 13.5,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/administering-splunk-enterprise-security.html"
   },
   {
     "id": "using-splunk-enterprise-security",
@@ -415,7 +460,8 @@
     "durationLabel": "Three 4.5-Hour Days",
     "durationHours": 13.5,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-enterprise-security.html"
   },
   {
     "id": "implementing-splunk-it-service-intelligence",
@@ -423,7 +469,8 @@
     "durationLabel": "Four 4.5-Hour Days",
     "durationHours": 18,
     "iltCostUsd": 2000,
-    "iltUnits": 200
+    "iltUnits": 200,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/implementing-splunk-it-service-intelligence.html"
   },
   {
     "id": "using-splunk-it-service-intelligence",
@@ -433,7 +480,8 @@
     "iltCostUsd": 750,
     "iltUnits": 75,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-it-service-intelligence.html"
   },
   {
     "id": "using-itsi-service-monitoring",
@@ -441,7 +489,8 @@
     "durationLabel": "2 Hours",
     "durationHours": 2,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-itsi-service-monitoring.html"
   },
   {
     "id": "using-itsi-event-analytics",
@@ -449,7 +498,8 @@
     "durationLabel": "2 Hours",
     "durationHours": 2,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-itsi-event-analytics.html"
   },
   {
     "id": "implementing-splunk-soar-community-playbooks",
@@ -458,7 +508,8 @@
     "durationHours": 2,
     "elearningCostUsd": 300,
     "elearningUnits": 30,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/implementing-splunk-soar-community-playbooks.html"
   },
   {
     "id": "developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-one",
@@ -466,7 +517,8 @@
     "durationLabel": "2 Hours",
     "durationHours": 2,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-one.html"
   },
   {
     "id": "developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-two",
@@ -474,7 +526,8 @@
     "durationLabel": "2 Hours",
     "durationHours": 2,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-splunk-soar-playbooks-in-the-visual-playbook-editor-part-two.html"
   },
   {
     "id": "administering-splunk-soar",
@@ -482,7 +535,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/administering-splunk-soar.html"
   },
   {
     "id": "investigating-incidents-splunk-soar",
@@ -490,7 +544,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/investigating-incidents-splunk-soar.html"
   },
   {
     "id": "developing-soar-playbooks",
@@ -498,7 +553,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-soar-playbooks.html"
   },
   {
     "id": "developing-splunk-soar-playbooks-for-splunk-enterprise-security",
@@ -506,7 +562,8 @@
     "durationLabel": "4 Hours",
     "durationHours": 4,
     "elearningCostUsd": 300,
-    "elearningUnits": 30
+    "elearningUnits": 30,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-splunk-soar-playbooks-for-splunk-enterprise-security.html"
   },
   {
     "id": "developing-splunk-soar-apps",
@@ -515,7 +572,8 @@
     "durationHours": 6,
     "elearningCostUsd": 450,
     "elearningUnits": 45,
-    "freeVideoOnly": true
+    "freeVideoOnly": true,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/developing-splunk-soar-apps.html"
   },
   {
     "id": "advanced-soar-implementation",
@@ -523,7 +581,8 @@
     "durationLabel": "Three 4.5-Hour Days",
     "durationHours": 13.5,
     "iltCostUsd": 1500,
-    "iltUnits": 150
+    "iltUnits": 150,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/advanced-soar-implementation.html"
   },
   {
     "id": "full-observability-pipeline-with-splunk-opentelemetry",
@@ -531,7 +590,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/full-observability-pipeline-with-splunk-opentelemetry.html"
   },
   {
     "id": "fundamentals-of-metrics-monitoring-in-splunk-observability",
@@ -539,7 +599,8 @@
     "durationLabel": "One 6-Hour Day",
     "durationHours": 6,
     "iltCostUsd": 750,
-    "iltUnits": 75
+    "iltUnits": 75,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/fundamentals-of-metrics-monitoring-in-splunk-observability.html"
   },
   {
     "id": "visualizing-and-alerting-in-splunk-observability-cloud",
@@ -547,7 +608,8 @@
     "durationLabel": "One 4.5-Hour Day",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/visualizing-and-alerting-in-splunk-observability-cloud.html"
   },
   {
     "id": "using-splunk-application-performance-monitoring",
@@ -555,7 +617,8 @@
     "durationLabel": "One 4.5-Hour Day",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-application-performance-monitoring.html"
   },
   {
     "id": "using-signal-flow-in-splunk-observability-cloud",
@@ -563,7 +626,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-signal-flow-in-splunk-observability-cloud.html"
   },
   {
     "id": "ingesting-application-metrics-in-splunk-observability-cloud",
@@ -571,7 +635,8 @@
     "durationLabel": "One 4.5-Hour Day",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/ingesting-application-metrics-in-splunk-observability-cloud.html"
   },
   {
     "id": "manual-instrumentation-with-splunk-apm",
@@ -579,7 +644,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/manual-instrumentation-with-splunk-apm.html"
   },
   {
     "id": "using-the-splunk-im-terraform-provider",
@@ -587,7 +653,8 @@
     "durationLabel": "Two 4.5-Hour Days",
     "durationHours": 9,
     "iltCostUsd": 1000,
-    "iltUnits": 100
+    "iltUnits": 100,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-the-splunk-im-terraform-provider.html"
   },
   {
     "id": "kubernetes-monitoring-with-splunk-observability-cloud",
@@ -595,7 +662,8 @@
     "durationLabel": "4.5 Hours",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/kubernetes-monitoring-with-splunk-observability-cloud.html"
   },
   {
     "id": "splunk-on-call-administration",
@@ -603,7 +671,8 @@
     "durationLabel": "One 4.5-Hour Day",
     "durationHours": 4.5,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/splunk-on-call-administration.html"
   },
   {
     "id": "using-splunk-synthetic-monitoring",
@@ -611,7 +680,8 @@
     "durationLabel": "One 6-Hour Day",
     "durationHours": 6,
     "iltCostUsd": 750,
-    "iltUnits": 75
+    "iltUnits": 75,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-synthetic-monitoring.html"
   },
   {
     "id": "using-splunk-real-user-monitoring",
@@ -619,7 +689,8 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-real-user-monitoring.html"
   },
   {
     "id": "using-splunk-incident-intelligence",
@@ -627,6 +698,7 @@
     "durationLabel": "3 Hours",
     "durationHours": 3,
     "iltCostUsd": 500,
-    "iltUnits": 50
+    "iltUnits": 50,
+    "splunkUrl": "https://www.splunk.com/en_us/training/courses/using-splunk-incident-intelligence.html"
   }
 ]

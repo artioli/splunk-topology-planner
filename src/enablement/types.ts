@@ -22,6 +22,7 @@ export interface Course {
   elearningCostUsd?: number;
   elearningUnits?: number;
   freeVideoOnly?: boolean;
+  splunkUrl?: string;
 }
 
 export type PrerequisiteExpr =
@@ -44,6 +45,9 @@ export interface Credential {
   credlyPageUrl?: string;
   mindtickleUrl?: string;
   splunkUrl?: string;
+  mandatoryCourseIds?: string[];
+  recommendedCourseIds?: string[];
+  /** @deprecated Use mandatoryCourseIds / recommendedCourseIds */
   relatedCourseIds?: string[];
   prerequisites: PrerequisiteExpr;
 }
@@ -109,6 +113,8 @@ export interface EnablementState {
   teamPlanIds: string[];
   orBranchSelections: Record<string, string>;
   viewMode: 'path' | 'matrix';
+  showMandatoryCourses: boolean;
+  showRecommendedCourses: boolean;
 }
 
 export const DEFAULT_FILTERS: EnablementFilters = {

@@ -2,6 +2,12 @@ import { t } from '../i18n';
 import { escapeHtml } from '../lib/format';
 import { bindNavEvents, renderNav } from '../nav';
 import { filterCourses, filterCredentials, filterCredentialsForMatrix, groupByTrack, prerequisiteCount } from './catalog';
+import {
+  courseTrainingUrl,
+  mandatoryCourseIds,
+  recommendedCourseIds,
+  resolveCourses,
+} from './credentialCourses';
 import { courses, getCredentials, manifest } from './data/load';
 import { copyCsv, copyMarkdown, copyMatrixCsv } from './exportPath';
 import { sortPathNodesForTable } from './pathTable';
@@ -18,10 +24,11 @@ import {
   saveEnablementState,
   setFilters,
   setOrBranch,
+  setPathCourseToggles,
   toggleCompleted,
   toggleTeamPlan,
 } from './progress';
-import type { Credential, CredentialTrack, EnablementState, PathNode } from './types';
+import type { Course, Credential, CredentialTrack, EnablementState, PathNode } from './types';
 
 const credentials = getCredentials();
 
@@ -136,6 +143,57 @@ function renderCatalog(state: EnablementState): string {
     )
     .join('');
   return sections || `<p class="field-hint">${escapeHtml(t('enablement.catalog.empty'))}</p>`;
+}
+
+function renderCourseLinkList(titleKey: string, list: Course[]): string {
+  if (!list.length) {
+    return `<p class="field-hint enablement-course-list-empty">${escapeHtml(t('enablement.courses.none'))}</p>`;
+  }
+  const items = list
+    .map((course) => {
+      const url = courseTrainingUrl(course);
+      const meta = `${course.durationLabel}${course.freeVideoOnly ? ` · ${t('enablement.course.freeVideo')}` : ''}`;
+      return `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(course.name)}</a> <span class="enablement-course-list-meta">${escapeHtml(meta)}</span></li>`;
+    })
+    .join('');
+  return `
+    <section class="enablement-course-list-section">
+      <h3 class="enablement-course-list-title">${escapeHtml(t(titleKey))}</h3>
+      <ul class="enablement-course-list">${items}</ul>
+    </section>`;
+}
+
+function renderPathCourseToggles(state: EnablementState, target: Credential): string {
+  const mandatory = mandatoryCourseIds(target);
+  const recommended = recommendedCourseIds(target);
+  if (!mandatory.length && !recommended.length) return '';
+
+  const mandatoryCourses = resolveCourses(mandatory, courses);
+  const recommendedCourses = resolveCourses(recommended, courses);
+
+  return `
+    <div class="enablement-path-course-panel">
+      <div class="enablement-path-course-toggles">
+        ${
+          mandatory.length
+            ? `<label class="enablement-check enablement-course-toggle">
+          <input type="checkbox" id="en-show-mandatory" ${state.showMandatoryCourses ? 'checked' : ''} />
+          ${escapeHtml(t('enablement.courses.showMandatory'))}
+        </label>`
+            : ''
+        }
+        ${
+          recommended.length
+            ? `<label class="enablement-check enablement-course-toggle">
+          <input type="checkbox" id="en-show-recommended" ${state.showRecommendedCourses ? 'checked' : ''} />
+          ${escapeHtml(t('enablement.courses.showRecommended'))}
+        </label>`
+            : ''
+        }
+      </div>
+      ${state.showMandatoryCourses ? renderCourseLinkList('enablement.courses.mandatoryTitle', mandatoryCourses) : ''}
+      ${state.showRecommendedCourses ? renderCourseLinkList('enablement.courses.recommendedTitle', recommendedCourses) : ''}
+    </div>`;
 }
 
 function renderPathNode(node: PathNode, compact = false): string {
@@ -324,6 +382,7 @@ function renderPathMap(state: EnablementState): string {
       : '';
   return `
     ${renderSummary(path, state)}
+    ${renderPathCourseToggles(state, target)}
     ${renderOrBranches(state, state.selectedId)}
     ${guideCallout}
     ${renderPathStepsTable(path)}
@@ -450,6 +509,22 @@ function bindEnablementEvents(container: HTMLElement, onLocaleChange?: () => voi
   };
   container.querySelector('#enablement-drawer-toggle')?.addEventListener('click', openEnDrawer);
   container.querySelector('#enablement-sidebar-backdrop')?.addEventListener('click', closeEnDrawer);
+
+  container.querySelector('#en-show-mandatory')?.addEventListener('change', (e) => {
+    const state = setPathCourseToggles(readState(), {
+      showMandatoryCourses: (e.target as HTMLInputElement).checked,
+    });
+    saveEnablementState(state);
+    renderEnablement(container, onLocaleChange);
+  });
+
+  container.querySelector('#en-show-recommended')?.addEventListener('change', (e) => {
+    const state = setPathCourseToggles(readState(), {
+      showRecommendedCourses: (e.target as HTMLInputElement).checked,
+    });
+    saveEnablementState(state);
+    renderEnablement(container, onLocaleChange);
+  });
 
   container.querySelectorAll('[data-select-id]').forEach((el) => {
     el.addEventListener('click', () => {

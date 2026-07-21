@@ -132,6 +132,7 @@ const courses = rawCourses.map(([nameRaw, durationLabel, iltCost, iltUnits, elea
   if (elearn.cost !== undefined) course.elearningCostUsd = elearn.cost;
   if (elearn.units !== undefined) course.elearningUnits = elearn.units;
   if (freeVideoOnly) course.freeVideoOnly = true;
+  course.splunkUrl = `https://www.splunk.com/en_us/training/courses/${course.id}.html`;
   return course;
 });
 

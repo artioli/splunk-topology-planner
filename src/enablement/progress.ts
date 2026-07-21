@@ -9,6 +9,8 @@ const DEFAULT_STATE: EnablementState = {
   teamPlanIds: [],
   orBranchSelections: {},
   viewMode: 'path',
+  showMandatoryCourses: false,
+  showRecommendedCourses: false,
 };
 
 export function loadEnablementState(): EnablementState {
@@ -23,6 +25,8 @@ export function loadEnablementState(): EnablementState {
       teamPlanIds: parsed.teamPlanIds ?? [],
       orBranchSelections: parsed.orBranchSelections ?? {},
       viewMode: parsed.viewMode ?? 'path',
+      showMandatoryCourses: parsed.showMandatoryCourses ?? false,
+      showRecommendedCourses: parsed.showRecommendedCourses ?? false,
     };
   } catch {
     return { ...DEFAULT_STATE, filters: { ...DEFAULT_FILTERS } };
@@ -56,4 +60,11 @@ export function setOrBranch(state: EnablementState, branchId: string, value: str
     ...state,
     orBranchSelections: { ...state.orBranchSelections, [branchId]: value },
   };
+}
+
+export function setPathCourseToggles(
+  state: EnablementState,
+  patch: Partial<Pick<EnablementState, 'showMandatoryCourses' | 'showRecommendedCourses'>>,
+): EnablementState {
+  return { ...state, ...patch };
 }

@@ -154,6 +154,12 @@ add('enablement.export.csv', 'Copy path (CSV)', 'Copiar percurso (CSV)', 'Copiar
 add('enablement.export.matrixCsv', 'Copy matrix (CSV)', 'Copiar matriz (CSV)', 'Copiar matriz (CSV)');
 add('enablement.catalog.empty', 'No credentials match your filters.', 'Nenhuma credencial corresponde aos filtros.', 'Ninguna credencial coincide con los filtros.');
 add('enablement.course.elearningOnly', 'eLearning pricing varies', 'Preço eLearning varia', 'Precio eLearning varía');
+add('enablement.course.freeVideo', 'Free video available', 'Vídeo gratuito disponível', 'Video gratuito disponible');
+add('enablement.courses.showMandatory', 'Show mandatory courses', 'Mostrar cursos obrigatórios', 'Mostrar cursos obligatorios');
+add('enablement.courses.showRecommended', 'Show recommended courses', 'Mostrar cursos recomendados', 'Mostrar cursos recomendados');
+add('enablement.courses.mandatoryTitle', 'Mandatory courses', 'Cursos obrigatórios', 'Cursos obligatorios');
+add('enablement.courses.recommendedTitle', 'Recommended courses', 'Cursos recomendados', 'Cursos recomendados');
+add('enablement.courses.none', 'No courses listed for this credential.', 'Nenhum curso listado para esta credencial.', 'Ningún curso listado para esta credencial.');
 add('enablement.teamPlan.add', 'Add to team plan', 'Adicionar ao plano de equipa', 'Añadir al plan de equipo');
 add('enablement.matrix.name', 'Name', 'Nome', 'Nombre');
 add('enablement.matrix.kind', 'Kind', 'Tipo', 'Tipo');
